@@ -1,0 +1,14 @@
+Installs:
+    Material:
+        npm install @mui/material @emotion/react @emotion/styled
+    Icons: 
+        npm install @mui/icons-material
+    
+    eslint:
+
+        npm init @eslint/config
+            https://dev.to/anukr98/setting-up-eslint-with-tsjs-in-your-react-project-in-2023-57o
+            had to force parser update: npm i @typescript-eslint/parser@6.21.0
+
+After eslint install i had to do this:
+npm install --legacy-peer-deps
