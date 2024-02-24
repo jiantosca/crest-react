@@ -19,7 +19,8 @@ import { Collapse, FormControlLabel, ListSubheader, Stack, Switch } from '@mui/m
 import { HttpResponse } from './HttpResponse';
 import { TempUtils } from '../support/TempUtils';
 import { RcUtils } from '../support/RestClientUtils';
-import { DarkMode, ExpandLess, ExpandMore, Http, ManageHistory } from '@mui/icons-material';
+import { DarkMode, ExpandLess, ExpandMore, ManageHistory } from '@mui/icons-material';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
 
 const drawerWidth = 260; //240;
 
@@ -56,7 +57,7 @@ export const AppLayout = () => {
   console.log(`<AppLayout /> rendered ${++renderCounter.current} times`)
 
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -136,12 +137,13 @@ export const AppLayout = () => {
         <List subheader={<ListSubheader>Settings</ListSubheader>}>
             <ListItem>
               <ListItemIcon>
-                <DarkMode/>
+                {/* <DarkMode/> */}
+                <Brightness4Icon />
               </ListItemIcon>
               <ListItemText id="switch-list-label-darkmode" primary="Dark Mode" />
               <Switch edge='end' size={RcUtils.defaultSize}
                 inputProps={{
-                  'aria-labelledby': 'switch-list-label-wifi'
+                  'aria-labelledby': 'switch-list-label-darkmode'
               }}/>
             </ListItem>
 
@@ -157,7 +159,7 @@ export const AppLayout = () => {
       </Drawer>
       <Main open={open} sx={{ p: 0, border: '0px solid black' }}>
         <RequestBuilder isDrawerOpen={isDrawerOpen} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
-        <Stack rowGap={2.5}>
+        <Stack rowGap={2.5} marginBottom={5}>
           <HttpResponse exchange={TempUtils.httpExchangeContext1}></HttpResponse>
           <HttpResponse exchange={TempUtils.httpExchangeContext2}></HttpResponse>
         </Stack>

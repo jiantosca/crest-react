@@ -12,3 +12,46 @@ Installs:
 
 After eslint install i had to do this:
 npm install --legacy-peer-deps
+
+
+
+cREST when word wrapping:
+    <pre id="entity-pre" style="padding-top: 0px;" class=" language-http">
+    <code id="entity-code" class=" language-http" style="white-space: pre-wrap; overflow-wrap: break-word;">
+
+<pre id="entity-pre" style="padding-top: 0px;" class="line-numbers language-http">
+    <code id="entity-code" class="language-http">
+
+code[class*="language-"], pre[class*="language-"]
+    color: black;
+    background: none;
+    text-shadow: white 0px 1px;
+    font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    line-height: 1.5;
+    tab-size: 4;
+    hyphens: none;
+
+
+        if(settings.wordWrap) {
+            this.entityCode.style['white-space'] = 'pre-wrap';
+            this.entityCode.style['word-wrap'] = 'break-word';
+            //this.entityCode.style['word-break'] = 'normal';
+        } else {
+            this.grabScroll = new GrabScroll(this.entityPre, this.inputs);
+        }
+        
+        //some docs on prism
+        //https://prismjs.com/extending.html#api
+        if(settings.prettyPrint) {
+            Prism.highlightElement(this.entityCode);
+        } else {
+            //put our own 'language-' class so prism styles still apply even if we don't color code
+            //this is main so text doesn't overflow which is what happens when i don't do this.
+            this.entityPre.classList.add('language-none');
+            //this.entityCode.classList.add('language-none');
+        }

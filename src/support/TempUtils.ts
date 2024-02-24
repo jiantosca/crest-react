@@ -322,7 +322,10 @@ export class TempUtils {
         'https://whois-history.whoisxmlapi.com/api/v1?apiKey=at_p1ClJahsw9MJkIGw1tedeZB3VqFGg&domainName=stripersonline.com&mode=purchase',
         'https://www.ndbc.noaa.gov/data/latest_obs/latest_obs.txt']
     
+
     static httpExchangeContext1: HttpExchangeContext = {
+      // report-to: {"group":"heroku-nel","max_age":3600,"endpoints":[{"url":"https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D"}]}
+      // reporting-endpoints: heroku-nel=https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D
       response: {
         headersAndBody: 
 `content-type: application/json
@@ -331,15 +334,13 @@ x-powered-by: Express
 x-ratelimit-limit: 1000
 x-ratelimit-remaining: 999
 x-ratelimit-reset: 1708351170
-report-to: {"group":"heroku-nel","max_age":3600,"endpoints":[{"url":"https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D"}]}
-reporting-endpoints: heroku-nel=https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D
 
 {
   "postId": 2,
   "id": 1,
   "name": "id labore ex et quam laborum",
   "email": "Eliseo@gardner.biz",
-  "body": "laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"
+  "body": "laudantium enim quasi est quidem magnam voluptate ipsam eos tempora quo necessitatibus dolor quam autem quasi reiciendis et nam sapiente accusantium"
 }`        
       }
     }
@@ -359,7 +360,13 @@ x-ratelimit-reset: 1708351170
   <from>Jani</from>
   <heading>Reminder</heading>
   <body>Don't forget me this weekend!</body>
-</note>`        
+  <longLine>
+    lkjajlkwepoijw ;kljasd;kljfpaoijw peiojsd;lkjf;lkjas;lkdjfpojii wejf;oikwf ;lkjwe;oijpoiwkjeg;lkjweiojwgoijw ew;k;lkwg;lkweoijvlk jwgpijgrpjowgopj wrpogjwpo rjwprogjkpworkpgw  okwporkg powkrg
+  </longLine>
+  <another>
+    eyJhbGciOiJSUzUxMiIsImtpZCI6IlRPVUNISUQiLCJ4NXQiOiJUcXhjUjV2RVZ1OUN4MXJWaUI1MXl2YnlSU0UiLCJwaS5hdG0iOiI2In0.eyJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwiZW1haWwiLCJCYXNpYyIsImNsaWVudGRpc2Nsb3N1cmVzcm8iLCJFbmhhbmNlZCJdLCJjbGllbnRfaWQiOiJ0cmFuc21pdCIsInRva2VudmFsaWRhdG9yIjoiUXhON3JhamJheWxmT2R0UVZIZ3VMaldQTUVFc3l0MlYiLCJ0aWFhQ3VzdG9tZXJOdW0iOiI0Njg0NzI5IiwidWlkIjoiaWFudG9zY2EiLCJMYXN0TG9naW5UaW1lc3RhbXAiOiJXZWQgRmViIDIxIDE0OjAzOjI0IEVTVCAyMDI0IiwidGlhYUN1c3RvbWVyVHlwZSI6IlBIIiwiWC1Gb3J3YXJkZWQtRnJvbS1TU08iOiJUcnVlIiwiZXhwIjoxNzA4NjAzNzc2fQ.fNZvVrOu5_a4llyUCq9qTBgXbdrofqUwE23WRyHDIXrVjuGRXw04PeBl1obe4EaYQ9fQVCtSUSrzpdkoFJmo2xl8vd2KgvPmGZOaHkF6vG1mlYFXm18hgnv5tYXYfWd1dbuM12F2QvozQLyP256g1H0m21IhDhWfJMjRpvv53zaAuw7mO7XcGXQHQ0Bf-NJ6HypXn6vVWUDzPXHlSUuaRQz2yQnderzclPS0B4mCzxy0hubNlNDoIzHh1ZewU5HuMQRTKviwRmmb0cH56zIkEw039g2spvgH2dyhhfYDEtOs_NQOK_Y9ACetXh3ws3BAztXX99sJ4-aPLq2jA_eFJA
+  </another>
+</note>`         
       }
     }
 

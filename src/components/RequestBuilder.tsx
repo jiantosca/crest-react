@@ -5,22 +5,38 @@ import {
   Paper, Stack, InputLabel, MenuItem,
   Select, SelectChangeEvent, FormControl,
   Autocomplete, TextField, Button, IconButton,
-  Menu, Box
+  Box
 } from '@mui/material'
 import SendIcon from '@mui/icons-material/Send';
 import MenuIcon from '@mui/icons-material/Menu'
 
-export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: any) => {
+/**
+ * This type doesn't enforce the calling code because they're passed as props one the react
+ * component like so... 
+ * 
+ * <RequestBuilder isDrawerOpen={isDrawerOpen} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
+ * 
+ * But it does enforce how the method can use the type, and perhaps makes things easier to read.
+ */
+type DrawerArgType = {
+  isDrawerOpen: () => boolean,
+  handleDrawerOpen: () => void,
+  handleDrawerClose: () => void
+}
+
+export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: DrawerArgType) => {
   const renderCounter  = React.useRef(0)
   console.log(`<RequestBuilder /> rendered ${++renderCounter.current} times`)
 
   const [bodyDisplay, setBodyDisplay] = React.useState<string>('none')
   const methodRef = React.useRef<string>()
-  const methodCallback = (method: string) => {
+  const httpMethodCallback = (method: string) => {
+    // TODO when we change body display, this updates state, and now all child elements gets re-rendered.
+    // need to look into redux and/or @preact 
+    // https://www.youtube.com/watch?v=SO8lBVWF2Y8
     ['POST', 'PUT'].includes(method) ? setBodyDisplay('') : setBodyDisplay('none')
-    console.log('methodCallback got ' + method);
+    console.log('httpMethodCallback got ' + method);
     methodRef.current = method
-
   }
 
   const urlRef = React.useRef<string | null>()
@@ -40,7 +56,7 @@ export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClo
     >
       <Stack direction='row' spacing={1.5}>
         <BurgerMenu isDrawerOpen={isDrawerOpen} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
-        <MethodDropDown methodCallback={methodCallback} />
+        <MethodDropDown httpMethodCallback={httpMethodCallback} />
         <UrlAutoComplete urlCallback={urlCallback} />
         <SendButton sendClickCallback={sendClickCallback} />
         {/* 
@@ -59,7 +75,7 @@ export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClo
     </Paper>
   )
 }
-const BurgerMenu = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: any) => {
+const BurgerMenu = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: DrawerArgType) => {
   const renderCounter  = React.useRef(0)
   console.log(`<BurgerMenu /> rendered ${++renderCounter.current} times`)
 
@@ -84,21 +100,18 @@ const BurgerMenu = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: any) 
   )
 }
 
-const MethodDropDown = ({ methodCallback }: any) => {
+const MethodDropDown = ({ httpMethodCallback }: {httpMethodCallback: (method: string) => void}) => {
   const renderCounter  = React.useRef(0)
   console.log(`<MethodDropDown /> rendered ${++renderCounter.current} times`)
 
   // using state instead of reference because we'll eventually want to
   // update state on like a load.
   const [method, setMethod] = React.useState<string>('GET')
-  console.log('MethodDropDown:');
-  console.log({ method })
-  const handleMethodChange = (event: SelectChangeEvent) => {
+
+  const onChangeMethod = (event: SelectChangeEvent) => {
     setMethod(event.target.value as string)
   }
   React.useEffect(() => {
-    // This function will only be called once since i gave it empty array
-    //
     //I was getting warning below when app loads and I click burger for drawer for the first 
     //time. 
     //Warning: Cannot update a component (`RequestBuilder`) while rendering a different component 
@@ -106,7 +119,9 @@ const MethodDropDown = ({ methodCallback }: any) => {
     // 
     // Stackoverflow suggested using useEffect
     //    https://stackoverflow.com/questions/62336340/cannot-update-a-component-while-rendering-a-different-component-warning
-    methodCallback(method);
+    // 
+    // the last param [method] means this useEffect method will only be invoked when the method state changes.
+    httpMethodCallback(method);
   }, [method]);
 
   const methodSelectWidth: number = 98
@@ -117,7 +132,7 @@ const MethodDropDown = ({ methodCallback }: any) => {
       <Select
         size={RcUtils.defaultSize}
         value={method}
-        onChange={handleMethodChange}
+        onChange={onChangeMethod}
         id="method-select-id"
         labelId="method-select-label-id"
         label='Method'
@@ -138,7 +153,7 @@ const UrlAutoComplete = ({ urlCallback }: any) => {
   const renderCounter  = React.useRef(0)
   console.log(`<UrlAutoComplete /> rendered ${++renderCounter.current} times`)
 
-  const [url, setUrl] = React.useState<string | null>(null)
+  const [url, setUrl] = React.useState<string | null>('https://jsonplaceholder.typicode.com/comments/2')
   urlCallback(url)
 
   return (
