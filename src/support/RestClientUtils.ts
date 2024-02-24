@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { FilterOptionsState } from '@mui/material'
 import { OverridableStringUnion } from "@mui/types";
 import { TempUtils } from "./TempUtils";

@@ -1,20 +1,28 @@
 import { CSSProperties } from "react";
 
-
-export const lightMode: { [key: string]: React.CSSProperties } = {
-  // placeholder
-}
 const background = 'inherit'; //orig: #2f2f2f
 const fontSize = '.95em'; //orig: '1em'
 
-
-console.log("TODO calc witdh of pre more dynamically??");
-//from /Users/jon/Projects/react/rest-client/node_modules/react-syntax-highlighter/src/styles/prism/vsc-dark-plus.js
-export const darkModeVsPlus: { [key: string]: React.CSSProperties } = {
+/**
+ * I pulled this css from <SyntaxHighlighter> code so i can customize. Maybe better
+ * way to go about this, but the <SyntaxHighlighter> comp doesn't seem to have a 
+ * simpler way. I basicallly lift/shifted from the <SyntaxHighlighter> comp code...
+ * 
+ * It's declared/exported from here (search for material-dark):
+ * 
+ * node_modules/@types/react-syntax-highlighter/index.d.ts
+ * 
+ * And the actual exported style can be found here: 
+ * 
+ * node_modules/react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus.js
+ * 
+ * Search for "JPI" below for all tweaks i made from the <SyntaxHighlighter> version.
+ * 
+ * NOTE: On the fly/update styles maybe here: 
+ * https://stackoverflow.com/questions/53024769/how-can-i-create-new-global-css-classes-on-the-fly-in-react
+ */
+export const darkMode: { [key: string]: React.CSSProperties } = {
     "pre[class*=\"language-\"]": {
-        //need to calc with based on whatever padding we have splus if 
-        //drawer is expanded.
-        //"width": "calc(100vw - 75px)", //jpi ... pre must have width to enable scrolling.
         "color": "#d4d4d4",
         "fontSize": `${fontSize}`,//jpi
         "textShadow": "none",
@@ -36,8 +44,6 @@ export const darkModeVsPlus: { [key: string]: React.CSSProperties } = {
         "margin": ".5em 0",
         "overflow": "auto",//jpi auto or hidden when word wrapping
         "background": `${background}` //jpi
-
-
     },
 
     //crest for word wrapping....
@@ -305,38 +311,46 @@ export const darkModeVsPlus: { [key: string]: React.CSSProperties } = {
     }
 }
 
-/**
- * I pulled this css from <SyntaxHighlighter> code so i can customize. Maybe better
- * way to go about this, but the <SyntaxHighlighter> comp doesn't seem to have a 
- * simpler way. I basicallly lift/shifted from the <SyntaxHighlighter> comp code...
- * 
- * It's declared/exported from here (search for material-dark):
- * 
- * node_modules/@types/react-syntax-highlighter/index.d.ts
- * 
- * And the actual exported style can be found here: 
- * 
- * node_modules/react-syntax-highlighter/dist/esm/styles/prism/material-dark.js
- * 
- * Search for "JPI" below for all tweaks i made from the <SyntaxHighlighter> version.
- * 
- * NOTE: On the fly/update styles maybe here: 
- * https://stackoverflow.com/questions/53024769/how-can-i-create-new-global-css-classes-on-the-fly-in-react
- */
-export const darkMode: { [key: string]: React.CSSProperties } = {
-  "code[class*=\"language-\"]": {
+
+// node_modules/react-syntax-highlighter/dist/esm/styles/prism/prism.js
+export const lightMode: { [key: string]: React.CSSProperties } = {
+  "pre[class*=\"language-\"]": {
+    "color": "black",
+    "background": `${background}`, //jpi
+    "textShadow": "0 1px white",
+    "fontFamily": "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace",
+    "fontSize": `${fontSize}`,
     "textAlign": "left",
     "whiteSpace": "pre",
     "wordSpacing": "normal",
     "wordBreak": "normal",
     "wordWrap": "normal",
-    "color": "#eee",
-    //JPI
-    "background": `${background}`,
-    "fontFamily": "Roboto Mono, monospace",
-    //JPI
+    "lineHeight": "1.5",
+    "MozTabSize": "4",
+    "OTabSize": "4",
+    "tabSize": "4",
+    "WebkitHyphens": "none",
+    "MozHyphens": "none",
+    "msHyphens": "none",
+    "hyphens": "none",
+    "padding": "1em",
+    "margin": ".5em 0",
+    "overflow": "auto"
+  },  
+  "code[class*=\"language-\"]": {
+    "color": "black",
     "fontSize": `${fontSize}`,
-    "lineHeight": "1.5em",
+    "textShadow": "0 1px white",
+    "fontFamily": "Menlo, Monaco, Consolas, \"Andale Mono\", \"Ubuntu Mono\", \"Courier New\", monospace",
+    "direction": "ltr",
+    "textAlign": "left",
+    "whiteSpace": "pre", //jpi comment for word wrap testing
+    //"whiteSpace": "pre-wrap", // jpi don't think i need this for word wrap but crest does it for some reason.
+    //"wordWrap": "break-word", //jpi forces word wrap!!!! yes!!
+    "wordWrap": "inherit",
+    "wordSpacing": "normal",
+    "wordBreak": "normal",
+    "lineHeight": "1.5",
     "MozTabSize": "4",
     "OTabSize": "4",
     "tabSize": "4",
@@ -345,181 +359,152 @@ export const darkMode: { [key: string]: React.CSSProperties } = {
     "msHyphens": "none",
     "hyphens": "none"
   },
-  "pre[class*=\"language-\"]": {
-    "textAlign": "left",
-    "whiteSpace": "pre",
-    "wordSpacing": "normal",
-    "wordBreak": "normal",
-    "wordWrap": "normal",
-    "color": "#eee",
-    //JPI 
-    "background": `${background}`,
-    "fontFamily": "Roboto Mono, monospace",
-    //JPI
-    "fontSize": `${fontSize}`,
-    "lineHeight": "1.5em",
-    "MozTabSize": "4",
-    "OTabSize": "4",
-    "tabSize": "4",
-    "WebkitHyphens": "none",
-    "MozHyphens": "none",
-    "msHyphens": "none",
-    "hyphens": "none",
-    "overflow": "auto",
-    "position": "relative",
-    "margin": "0.5em 0",
-    "padding": "1.25em 1em"
-  },
-  "code[class*=\"language-\"]::-moz-selection": {
-    "background": "#363636"
-  },
   "pre[class*=\"language-\"]::-moz-selection": {
-    "background": "#363636"
-  },
-  "code[class*=\"language-\"] ::-moz-selection": {
-    "background": "#363636"
+    "textShadow": "none",
+    "background": "#b3d4fc"
   },
   "pre[class*=\"language-\"] ::-moz-selection": {
-    "background": "#363636"
+    "textShadow": "none",
+    "background": "#b3d4fc"
   },
-  "code[class*=\"language-\"]::selection": {
-    "background": "#363636"
+  "code[class*=\"language-\"]::-moz-selection": {
+    "textShadow": "none",
+    "background": "#b3d4fc"
+  },
+  "code[class*=\"language-\"] ::-moz-selection": {
+    "textShadow": "none",
+    "background": "#b3d4fc"
   },
   "pre[class*=\"language-\"]::selection": {
-    "background": "#363636"
-  },
-  "code[class*=\"language-\"] ::selection": {
-    "background": "#363636"
+    "textShadow": "none",
+    "background": "#b3d4fc"
   },
   "pre[class*=\"language-\"] ::selection": {
-    "background": "#363636"
+    "textShadow": "none",
+    "background": "#b3d4fc"
+  },
+  "code[class*=\"language-\"]::selection": {
+    "textShadow": "none",
+    "background": "#b3d4fc"
+  },
+  "code[class*=\"language-\"] ::selection": {
+    "textShadow": "none",
+    "background": "#b3d4fc"
   },
   ":not(pre) > code[class*=\"language-\"]": {
-    "whiteSpace": "normal",
-    "borderRadius": "0.2em",
-    "padding": "0.1em"
-  },
-  ".language-css > code": {
-    "color": "#fd9170"
-  },
-  ".language-sass > code": {
-    "color": "#fd9170"
-  },
-  ".language-scss > code": {
-    "color": "#fd9170"
-  },
-  "[class*=\"language-\"] .namespace": {
-    //JPI had to chanage from Opacity to opacity
-    "opacity": "0.7"
-  },
-  "atrule": {
-    "color": "#c792ea"
-  },
-  "attr-name": {
-    "color": "#ffcb6b"
-  },
-  "attr-value": {
-    "color": "#a5e844"
-  },
-  "attribute": {
-    "color": "#a5e844"
-  },
-  "boolean": {
-    "color": "#c792ea"
-  },
-  "builtin": {
-    "color": "#ffcb6b"
-  },
-  "cdata": {
-    "color": "#80cbc4"
-  },
-  "char": {
-    "color": "#80cbc4"
-  },
-  "class": {
-    "color": "#ffcb6b"
-  },
-  "class-name": {
-    "color": "#f2ff00"
+    "background": "#f5f2f0",
+    "padding": ".1em",
+    "borderRadius": ".3em",
+    "whiteSpace": "normal"
   },
   "comment": {
-    "color": "#616161"
-  },
-  "constant": {
-    "color": "#c792ea"
-  },
-  "deleted": {
-    "color": "#ff6666"
-  },
-  "doctype": {
-    "color": "#616161"
-  },
-  "entity": {
-    "color": "#ff6666"
-  },
-  "function": {
-    "color": "#c792ea"
-  },
-  "hexcode": {
-    "color": "#f2ff00"
-  },
-  "id": {
-    "color": "#c792ea",
-    "fontWeight": "bold"
-  },
-  "important": {
-    "color": "#c792ea",
-    "fontWeight": "bold"
-  },
-  "inserted": {
-    "color": "#80cbc4"
-  },
-  "keyword": {
-    "color": "#c792ea"
-  },
-  "number": {
-    "color": "#fd9170"
-  },
-  "operator": {
-    "color": "#89ddff"
+    "color": "slategray"
   },
   "prolog": {
-    "color": "#616161"
+    "color": "slategray"
   },
-  "property": {
-    "color": "#80cbc4"
+  "doctype": {
+    "color": "slategray"
   },
-  "pseudo-class": {
-    "color": "#a5e844"
-  },
-  "pseudo-element": {
-    "color": "#a5e844"
+  "cdata": {
+    "color": "slategray"
   },
   "punctuation": {
-    "color": "#89ddff"
+    "color": "#999"
   },
-  "regex": {
-    "color": "#f2ff00"
+  "namespace": {
+    "opacity": ".7"
   },
-  "selector": {
-    "color": "#ff6666"
-  },
-  "string": {
-    "color": "#a5e844"
-  },
-  "symbol": {
-    "color": "#c792ea"
+  "property": {
+    "color": "#905"
   },
   "tag": {
-    "color": "#ff6666"
+    "color": "#905"
   },
-  "unit": {
-    "color": "#fd9170"
+  "boolean": {
+    "color": "#905"
+  },
+  "number": {
+    "color": "#905"
+  },
+  "constant": {
+    "color": "#905"
+  },
+  "symbol": {
+    "color": "#905"
+  },
+  "deleted": {
+    "color": "#905"
+  },
+  "selector": {
+    "color": "#690"
+  },
+  "attr-name": {
+    "color": "#690"
+  },
+  "string": {
+    "color": "#690"
+  },
+  "char": {
+    "color": "#690"
+  },
+  "builtin": {
+    "color": "#690"
+  },
+  "inserted": {
+    "color": "#690"
+  },
+  "operator": {
+    "color": "#9a6e3a",
+    "background": "hsla(0, 0%, 100%, .5)"
+  },
+  "entity": {
+    "color": "#9a6e3a",
+    "background": "hsla(0, 0%, 100%, .5)",
+    "cursor": "help"
   },
   "url": {
-    "color": "#ff6666"
+    "color": "#9a6e3a",
+    "background": "hsla(0, 0%, 100%, .5)"
+  },
+  ".language-css .token.string": {
+    "color": "#9a6e3a",
+    "background": "hsla(0, 0%, 100%, .5)"
+  },
+  ".style .token.string": {
+    "color": "#9a6e3a",
+    "background": "hsla(0, 0%, 100%, .5)"
+  },
+  "atrule": {
+    "color": "#07a"
+  },
+  "attr-value": {
+    "color": "#07a"
+  },
+  "keyword": {
+    "color": "#07a"
+  },
+  "function": {
+    "color": "#DD4A68"
+  },
+  "class-name": {
+    "color": "#DD4A68"
+  },
+  "regex": {
+    "color": "#e90"
+  },
+  "important": {
+    "color": "#e90",
+    "fontWeight": "bold"
   },
   "variable": {
-    "color": "#ff6666"
+    "color": "#e90"
+  },
+  "bold": {
+    "fontWeight": "bold"
+  },
+  "italic": {
+    "fontStyle": "italic"
   }
 };
+

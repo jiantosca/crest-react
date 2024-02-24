@@ -1,23 +1,20 @@
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import * as React from 'react';
+import { useDrawerContext } from '../support/Context';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
-// playing with out of the box <SyntaxHighlighter> comp styles.
-import { solarizedlight, a11yDark, oneDark, twilight, materialDark, materialLight, vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
-// my custom ones.
-import { darkMode, darkModeVsPlus, lightMode } from "../support/highlighter/HighlighterStyles";
+
+import { darkMode, lightMode } from "../support/highlighter/HighlighterStyles";
 
 export const HttpHighlighter = ({headersAndBody}: {headersAndBody: string}) => {
     const renderCounter  = React.useRef(0)
     console.log(`<HttpHighlighter /> rendered ${++renderCounter.current} times`)
+    
+    const drawerState = useDrawerContext()
 
-     const json = {
-        "sldkjf":  1,
-        "two" : "three"
-     }
     return (
         <SyntaxHighlighter 
             language='http' 
-            style={darkModeVsPlus}
+            style={drawerState.isDarkMode ? darkMode : lightMode}
             showLineNumbers={true}
             wrapLongLines={false}
             //showInlineLineNumbers={true}

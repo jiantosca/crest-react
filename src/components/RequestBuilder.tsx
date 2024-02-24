@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import SendIcon from '@mui/icons-material/Send';
 import MenuIcon from '@mui/icons-material/Menu'
+import { useDrawerContext } from '../support/Context';
 
 /**
  * This type doesn't enforce the calling code because they're passed as props one the react
@@ -18,13 +19,13 @@ import MenuIcon from '@mui/icons-material/Menu'
  * 
  * But it does enforce how the method can use the type, and perhaps makes things easier to read.
  */
-type DrawerArgType = {
-  isDrawerOpen: () => boolean,
-  handleDrawerOpen: () => void,
-  handleDrawerClose: () => void
-}
+// type DrawerArgType = {
+//   isDrawerOpen: () => boolean,
+//   handleDrawerOpen: () => void,
+//   handleDrawerClose: () => void
+// }
 
-export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: DrawerArgType) => {
+export const RequestBuilder = () => {
   const renderCounter  = React.useRef(0)
   console.log(`<RequestBuilder /> rendered ${++renderCounter.current} times`)
 
@@ -47,6 +48,8 @@ export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClo
   const sendClickCallback = (event: React.MouseEvent<HTMLButtonElement>) => {
     console.log(`Send: ${methodRef.current} ${urlRef.current}`)
   }
+  
+  const drawerState = useDrawerContext()
 
   return (
     <Paper
@@ -55,7 +58,7 @@ export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClo
       sx={{ borderRadius: '0px 0px 4px 4px', padding: '20px', margin: '0px 20px 20px 20px' }}
     >
       <Stack direction='row' spacing={1.5}>
-        <BurgerMenu isDrawerOpen={isDrawerOpen} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
+        {!drawerState.isOpen && <BurgerMenu />}
         <MethodDropDown httpMethodCallback={httpMethodCallback} />
         <UrlAutoComplete urlCallback={urlCallback} />
         <SendButton sendClickCallback={sendClickCallback} />
@@ -75,16 +78,12 @@ export const RequestBuilder = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClo
     </Paper>
   )
 }
-const BurgerMenu = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: DrawerArgType) => {
+const BurgerMenu = () => {
   const renderCounter  = React.useRef(0)
   console.log(`<BurgerMenu /> rendered ${++renderCounter.current} times`)
-
-  //now the burger stuff...
-  const [iconDisplay, setIconDisplay] = React.useState<string>('')
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    (isDrawerOpen()) ? handleDrawerClose() : handleDrawerOpen()
-  }
-
+  
+  const drawerState = useDrawerContext()//custom hook!
+  
   return (
     <Box
       sx={{ display: 'flex', border: '0px solid black' }}
@@ -93,7 +92,7 @@ const BurgerMenu = ({ isDrawerOpen, handleDrawerOpen, handleDrawerClose }: Drawe
       <IconButton
         size='small'
         id='burger-button'
-        onClick={handleClick}>
+        onClick={drawerState.toggleDrawer}>
         <MenuIcon />
       </IconButton>
     </Box>
