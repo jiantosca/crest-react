@@ -5,6 +5,7 @@ export class RcUtils {
 
   static defaultVariant: 'standard' | 'outlined' | 'filled' | undefined = 'standard' //'filled', 'outlined', 'standard'
   static defaultSize: OverridableStringUnion<'medium' | 'small'> = 'medium' //only use small/medium since not all have large
+  static iconButtonSize: OverridableStringUnion<'medium' | 'small' | 'large'> = 'small' //only use small/medium since not all have large
   static defaultElevation: number = 3
   /**
    * 
@@ -33,24 +34,27 @@ export class RcUtils {
   }
 }
 
-
+type NameValuePair = {
+  name: string
+  value: string
+}
 export type HttpExchangeContext = {
-  timeout?: number | 30
-  aborted?: boolean
+  timedout: boolean
+  aborted: boolean
   startTime?: number
   endTime?: number
 
-  request?: {
-    method?: string
-    url?: string
-    headers?: string[]
+  request: {
+    method: string
+    url: string
+    headers: NameValuePair[]
     body?: string
-    headersAndBody?: string
+    headersAndBody: string
   }
 
   response: {
-    statusCode?: number
-    headers?: string[]
+    statusCode: number
+    headers: NameValuePair[]
     body?: string
     headersAndBody: string
   }

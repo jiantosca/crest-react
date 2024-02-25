@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { RcUtils } from '../support/RestClientUtils';
+import * as React from 'react'
+import { RcUtils } from '../support/RestClientUtils'
 
 import {
   Paper, Stack, InputLabel, MenuItem,
@@ -7,10 +7,12 @@ import {
   Autocomplete, TextField, Button, IconButton,
   Box
 } from '@mui/material'
-import SendIcon from '@mui/icons-material/Send';
+import SendIcon from '@mui/icons-material/Send'
 import MenuIcon from '@mui/icons-material/Menu'
-import { useDrawerContext } from '../support/Context';
-
+import { useDrawerContext } from '../support/Context'
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
+import { LoadingButton } from '@mui/lab'
 /**
  * This type doesn't enforce the calling code because they're passed as props one the react
  * component like so... 
@@ -26,18 +28,32 @@ import { useDrawerContext } from '../support/Context';
 // }
 
 export const RequestBuilder = () => {
-  const renderCounter  = React.useRef(0)
+  const renderCounter = React.useRef(0)
   console.log(`<RequestBuilder /> rendered ${++renderCounter.current} times`)
 
   const [bodyDisplay, setBodyDisplay] = React.useState<string>('none')
   const methodRef = React.useRef<string>()
   const httpMethodCallback = (method: string) => {
+    console.log('httpMethodCallback got ' + method);
     // TODO when we change body display, this updates state, and now all child elements gets re-rendered.
-    // need to look into redux and/or @preact 
+    // Maybe we need to look into redux and/or @preact 
     // https://www.youtube.com/watch?v=SO8lBVWF2Y8
     ['POST', 'PUT'].includes(method) ? setBodyDisplay('') : setBodyDisplay('none')
-    console.log('httpMethodCallback got ' + method);
     methodRef.current = method
+
+    /**
+     * Some component widths are based on whether or not the scrollbar is visible. In particular
+     * the HttpResponses component which has listeners to detect window resize and scroll events
+     * to know when to adjust its width. The method drop down can cause the vertical scrollbar
+     * to appear or disappear, so we'll dispatch a scroll event allowing compoenents to adjust 
+     * their width. Maybe hacky, but seems a lot simpler than managing more state between components.
+     * 
+     * Need to use setTimeout otherwise the scroll event is dispatched before the scrollbar is actually
+     * visible or hidden.
+     */
+    setTimeout(function () {
+      window.dispatchEvent(new Event('scroll'));
+    }, 10);
   }
 
   const urlRef = React.useRef<string | null>()
@@ -48,7 +64,7 @@ export const RequestBuilder = () => {
   const sendClickCallback = (event: React.MouseEvent<HTMLButtonElement>) => {
     console.log(`Send: ${methodRef.current} ${urlRef.current}`)
   }
-  
+
   const drawerState = useDrawerContext()
 
   return (
@@ -79,11 +95,11 @@ export const RequestBuilder = () => {
   )
 }
 const BurgerMenu = () => {
-  const renderCounter  = React.useRef(0)
+  const renderCounter = React.useRef(0)
   console.log(`<BurgerMenu /> rendered ${++renderCounter.current} times`)
-  
+
   const drawerState = useDrawerContext()//custom hook!
-  
+
   return (
     <Box
       sx={{ display: 'flex', border: '0px solid black' }}
@@ -99,8 +115,8 @@ const BurgerMenu = () => {
   )
 }
 
-const MethodDropDown = ({ httpMethodCallback }: {httpMethodCallback: (method: string) => void}) => {
-  const renderCounter  = React.useRef(0)
+const MethodDropDown = ({ httpMethodCallback }: { httpMethodCallback: (method: string) => void }) => {
+  const renderCounter = React.useRef(0)
   console.log(`<MethodDropDown /> rendered ${++renderCounter.current} times`)
 
   // using state instead of reference because we'll eventually want to
@@ -125,7 +141,7 @@ const MethodDropDown = ({ httpMethodCallback }: {httpMethodCallback: (method: st
 
   const methodSelectWidth: number = 98
   return (
-    <FormControl variant={RcUtils.defaultVariant} 
+    <FormControl variant={RcUtils.defaultVariant}
       sx={{ border: '0px solid black', minWidth: methodSelectWidth, maxWidth: methodSelectWidth }}>
       <InputLabel id="method-select-label-id">Method</InputLabel>
       <Select
@@ -149,7 +165,7 @@ const MethodDropDown = ({ httpMethodCallback }: {httpMethodCallback: (method: st
 }
 
 const UrlAutoComplete = ({ urlCallback }: any) => {
-  const renderCounter  = React.useRef(0)
+  const renderCounter = React.useRef(0)
   console.log(`<UrlAutoComplete /> rendered ${++renderCounter.current} times`)
 
   const [url, setUrl] = React.useState<string | null>('https://jsonplaceholder.typicode.com/comments/2')
@@ -172,9 +188,16 @@ const UrlAutoComplete = ({ urlCallback }: any) => {
 }
 
 const SendButton = ({ sendClickCallback }: any) => {
-  const renderCounter  = React.useRef(0)
+  const renderCounter = React.useRef(0)
   console.log(`<SendButton /> rendered ${++renderCounter.current} times`)
-
+  const [sending, setSending] = React.useState<boolean>(false)
+  const handleClick = () => {
+    setSending(true);
+    sendClickCallback();
+    setTimeout(() => {
+      setSending(false);
+    }, 2000);
+  }
   return (
     //how i figure out alignment via flex https://www.youtube.com/watch?v=sKeW8r_mDS0
     <Stack direction='row'
@@ -182,20 +205,32 @@ const SendButton = ({ sendClickCallback }: any) => {
       justifyContent='flex-end'
       alignItems='flex-end'
     >
-      <Button
+      {/* <Button
         variant='contained'
-        size={RcUtils.defaultSize}
+        color='primary'
+        //size={RcUtils.defaultSize}
+        size='small'
         endIcon={<SendIcon />}
         onClick={sendClickCallback}
       >
         Send
-      </Button>
+      </Button> */}
+      <LoadingButton
+          size="small"
+          onClick={handleClick}
+          endIcon={<SendIcon />}
+          loading={sending}
+          loadingPosition="end"
+          variant="contained"
+        >
+          <span>Send</span>
+        </LoadingButton>
     </Stack>
   )
 }
 
 const HeadersInput = () => {
-  const renderCounter  = React.useRef(0)
+  const renderCounter = React.useRef(0)
   console.log(`<HeadersInput /> rendered ${++renderCounter.current} times`)
 
   return (
@@ -208,7 +243,7 @@ const HeadersInput = () => {
   )
 }
 const BodyInput = () => {
-  const renderCounter  = React.useRef(0)
+  const renderCounter = React.useRef(0)
   console.log(`<BodyInput /> rendered ${++renderCounter.current} times`)
 
   return (

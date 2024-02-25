@@ -324,9 +324,36 @@ export class TempUtils {
     
 
     static httpExchangeContext1: HttpExchangeContext = {
+      timedout: false,
+      aborted: false,
+      request: { 
+        method: 'GET',
+        url: 'https://origin-service.tiaa-cref.org/private/api/ext-deposit-accounts-rs-v1/api/bank-users/4684729/deposit-accounts?&userinfo=true',
+        headers: [
+          { name: 'accept', value: 'application/json' },
+          { name: 'accept-encoding', value: 'gzip, deflate, br' },
+          { name: 'user-agent', value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36' }
+        ],
+        headersAndBody:
+`
+accept: application/json
+accept-encoding: gzip, deflate, br
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36
+`
+
+      },
       // report-to: {"group":"heroku-nel","max_age":3600,"endpoints":[{"url":"https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D"}]}
       // reporting-endpoints: heroku-nel=https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D
       response: {
+        statusCode: 200,
+        headers: [ 
+          { name: 'content-type', value: 'application/json' },
+          { name: 'date', value: 'Mon, 19 Feb 2024 13:58:37 GMT' },
+          { name: 'x-powered-by', value: 'Express' },
+          { name: 'x-ratelimit-limit', value: '1000' },
+          { name: 'x-ratelimit-remaining', value: '999' },
+          { name: 'x-ratelimit-reset', value: '1708351170' }
+        ],
         headersAndBody: 
 `content-type: application/json
 date: Mon, 19 Feb 2024 13:58:37 GMT
@@ -340,13 +367,44 @@ x-ratelimit-reset: 1708351170
   "id": 1,
   "name": "id labore ex et quam laborum",
   "email": "Eliseo@gardner.biz",
-  "body": "laudantium enim quasi est quidem magnam voluptate ipsam eos tempora quo necessitatibus dolor quam autem quasi reiciendis et nam sapiente accusantium"
+  "body": "jpi laudantium enim quasi est quidem magnam voluptate ipsam eos tempora quo necessitatibus dolor quam autem quasi reiciendis et nam sapiente accusantium"
 }`        
       }
     }
-    
+
     static httpExchangeContext2: HttpExchangeContext = {
+      timedout: false,
+      aborted: false,
+      request: { 
+        method: 'GET',
+        url: 'http://localhost:8080/posts/1',
+        headers: [
+          { name: 'accept', value: 'application/json' },
+          { name: 'accept-encoding', value: 'gzip, deflate, br' },
+          { name: 'user-agent', value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36' }
+        ],
+        headersAndBody:
+`
+accept: application/json
+accept-encoding: gzip, deflate, br
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36
+
+<noteRequest>
+  <id>1</id>
+</noteRequest>`
+      },
+      // report-to: {"group":"heroku-nel","max_age":3600,"endpoints":[{"url":"https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D"}]}
+      // reporting-endpoints: heroku-nel=https://nel.heroku.com/reports?ts=1707994110&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&s=XAbji7LDyUy9DOcs8S%2BkL9leRmEdRUSEOgTiEGYB9aQ%3D
       response: {
+        statusCode: 501,
+        headers: [
+          { name: 'content-type', value: 'application/xml' },
+          { name: 'date', value: 'Mon, 19 Feb 2024 13:58:37 GMT' },
+          { name: 'x-powered-by', value: 'Express' },
+          { name: 'x-ratelimit-limit', value: '1000' },
+          { name: 'x-ratelimit-remaining', value: '999' },
+          { name: 'x-ratelimit-reset', value: '1708351170' }
+        ],
         headersAndBody: 
 `content-type: application/xml
 date: Mon, 19 Feb 2024 13:58:37 GMT
@@ -366,12 +424,37 @@ x-ratelimit-reset: 1708351170
   <another>
     eyJhbGciOiJSUzUxMiIsImtpZCI6IlRPVUNISUQiLCJ4NXQiOiJUcXhjUjV2RVZ1OUN4MXJWaUI1MXl2YnlSU0UiLCJwaS5hdG0iOiI2In0.eyJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwiZW1haWwiLCJCYXNpYyIsImNsaWVudGRpc2Nsb3N1cmVzcm8iLCJFbmhhbmNlZCJdLCJjbGllbnRfaWQiOiJ0cmFuc21pdCIsInRva2VudmFsaWRhdG9yIjoiUXhON3JhamJheWxmT2R0UVZIZ3VMaldQTUVFc3l0MlYiLCJ0aWFhQ3VzdG9tZXJOdW0iOiI0Njg0NzI5IiwidWlkIjoiaWFudG9zY2EiLCJMYXN0TG9naW5UaW1lc3RhbXAiOiJXZWQgRmViIDIxIDE0OjAzOjI0IEVTVCAyMDI0IiwidGlhYUN1c3RvbWVyVHlwZSI6IlBIIiwiWC1Gb3J3YXJkZWQtRnJvbS1TU08iOiJUcnVlIiwiZXhwIjoxNzA4NjAzNzc2fQ.fNZvVrOu5_a4llyUCq9qTBgXbdrofqUwE23WRyHDIXrVjuGRXw04PeBl1obe4EaYQ9fQVCtSUSrzpdkoFJmo2xl8vd2KgvPmGZOaHkF6vG1mlYFXm18hgnv5tYXYfWd1dbuM12F2QvozQLyP256g1H0m21IhDhWfJMjRpvv53zaAuw7mO7XcGXQHQ0Bf-NJ6HypXn6vVWUDzPXHlSUuaRQz2yQnderzclPS0B4mCzxy0hubNlNDoIzHh1ZewU5HuMQRTKviwRmmb0cH56zIkEw039g2spvgH2dyhhfYDEtOs_NQOK_Y9ACetXh3ws3BAztXX99sJ4-aPLq2jA_eFJA
   </another>
-</note>`         
+</note>`        
       }
-    }
+    }    
 
     static httpExchangeContext3: HttpExchangeContext = {
+      timedout: false,
+      aborted: false,
+      request: { 
+        method: 'GET',
+        url: 'http://localhost:8080/posts/1',
+        headers: [
+          { name: 'accept', value: 'application/json' },
+          { name: 'accept-encoding', value: 'gzip, deflate, br' },
+          { name: 'user-agent', value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36' }
+        ],
+        headersAndBody:
+`
+accept: application/json
+accept-encoding: gzip, deflate, br
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36
+`
+
+      },
       response: {
+        statusCode: 200,
+        headers: [
+          { name: 'content-type', value: 'application/json' },
+          { name: 'date', value: 'Mon, 19 Feb 2024 13:58:37 GMT' },
+          { name: 'x-powered-by', value: 'Express' },
+          { name: 'x-ratelimit-limit', value: '1000' }
+        ],
         headersAndBody: 
 `content-type: application/json
 date: Mon, 19 Feb 2024 13:58:37 GMT

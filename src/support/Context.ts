@@ -13,16 +13,13 @@ export interface DrawerState {
     toggleDarkMode: () => void | undefined
     toggleDrawer: () => void | undefined
 }
-
 export const DrawerContext = React.createContext<DrawerState | undefined>(undefined);
-
-//custom useDrawerContext hook
 export const useDrawerContext = () => {
     const drawer = React.useContext(DrawerContext)
 
     if(drawer === undefined) {
         throw new Error('useDrawerContext must be used with DrawerContext. ' + 
-            'You\'re missing <DrawerContext.Provider> in your component, or one of it\'s parent components.')
+            'You\'re missing <DrawerContext.Provider> in one of your components that sets it up.')
     }
 
     return drawer

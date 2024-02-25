@@ -7,10 +7,10 @@ import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { RequestBuilder } from './components/RequestBuilder'
 import { Stack } from '@mui/material';
-import { HttpResponse } from './components/HttpResponse';
-import { TempUtils } from './support/TempUtils';
+import { HttpResponseCard } from './components/HttpResponseCard';
 import { DrawerContext, DrawerState } from './support/Context';
 import { AppDrawer } from './components/AppDrawer';
+import { HttpResponses } from './components/HttpResponses';
 
 
 const drawerWidth = 260
@@ -74,15 +74,14 @@ function App() {
   return (
     <ThemeProvider theme={appTheme}>
       <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
+      {/* enableColorScheme is how i got scroll bar color to match theme, for some reason every all the other
+      components are using the correct color scheme, but the scroll bar is not. */}
+        <CssBaseline enableColorScheme/>
         <DrawerContext.Provider value={drawerState}>
         <AppDrawer />
         <Main open={drawerState.isOpen} sx={{ p: 0, border: '0px solid black' }}>
             <RequestBuilder />
-            <Stack rowGap={2.5} marginBottom={5}>
-              <HttpResponse exchange={TempUtils.httpExchangeContext1}></HttpResponse>
-              <HttpResponse exchange={TempUtils.httpExchangeContext2}></HttpResponse>
-            </Stack>
+            <HttpResponses />
         </Main>
         </DrawerContext.Provider>
       </Box>
