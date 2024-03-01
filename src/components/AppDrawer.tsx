@@ -15,7 +15,7 @@ import { Collapse, FormControlLabel, ListSubheader, Switch } from '@mui/material
 import { ExpandLess, ExpandMore, ManageHistory } from '@mui/icons-material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import { styled, useTheme } from '@mui/material/styles';
-import { useDrawerContext } from '../support/Context';
+import { useApplicationContext } from '../support/Context';
 import { RcUtils } from '../support/RestClientUtils';
 import PublishIcon from '@mui/icons-material/Publish';
 
@@ -36,21 +36,21 @@ export const AppDrawer = () => {
       setHistoryOpen(!historyOpen);
     };
     
-    const drawerState = useDrawerContext()
+    const drawerState = useApplicationContext()
 
     return (
         <Drawer
             sx={{
-                width: drawerState.width,
+                width: drawerState.drawerWidth,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
-                    width: drawerState.width,
+                    width: drawerState.drawerWidth,
                     boxSizing: 'border-box',
                 },
             }}
             variant="persistent"
             anchor="left"
-            open={drawerState.isOpen}
+            open={drawerState.isDrawerOpen}
             transitionDuration={0}
         >
             <DrawerHeader>

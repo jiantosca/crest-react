@@ -6,9 +6,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { RequestBuilder } from './components/RequestBuilder'
-import { Stack } from '@mui/material';
-import { HttpResponseCard } from './components/HttpResponseCard';
-import { DrawerContext, DrawerState } from './support/Context';
+import { ApplicationContext, Application, HttpExchangeContext, HttpExchangeHolder } from './support/Context';
 import { AppDrawer } from './components/AppDrawer';
 import { HttpResponses } from './components/HttpResponses';
 
@@ -45,23 +43,28 @@ function App() {
   // from UI toggle switch.
   // const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
 
-  const [drawerState, setDrawerState] = React.useState<DrawerState>({
-    isOpen: false,
+  const [httpExchangeHolder, setHttpExchangeHolder] = React.useState<HttpExchangeHolder>({value:undefined})
+
+  const [appState, setAppState] = React.useState<Application>({
+    isDrawerOpen: false,
     isDarkMode: true,//pull from local storage or just stick with 
-    width: drawerWidth,
+    drawerWidth: drawerWidth,
     toggleDrawer: () => {
-      drawerState.isOpen = !drawerState.isOpen
-      setDrawerState({ ...drawerState })
+      appState.isDrawerOpen = !appState.isDrawerOpen
+      setAppState({ ...appState })
     },
     toggleDarkMode: () => {
-      drawerState.isDarkMode = !drawerState.isDarkMode
-      setDrawerState({ ...drawerState })
+      appState.isDarkMode = !appState.isDarkMode
+      setAppState({ ...appState })
+    },
+    setHttpExchangeHolder: (exchangeHolder: HttpExchangeHolder) => {
+      setHttpExchangeHolder(exchangeHolder)
     }
   });
 
   const appTheme = createTheme({
     palette: {
-      mode: drawerState.isDarkMode ? 'dark' : 'light',
+      mode: appState.isDarkMode ? 'dark' : 'light',
     },
     transitions: {
       duration: {
@@ -71,19 +74,23 @@ function App() {
     }
   });
 
+
   return (
+    
     <ThemeProvider theme={appTheme}>
       <Box sx={{ display: 'flex' }}>
       {/* enableColorScheme is how i got scroll bar color to match theme, for some reason every all the other
       components are using the correct color scheme, but the scroll bar is not. */}
         <CssBaseline enableColorScheme/>
-        <DrawerContext.Provider value={drawerState}>
+        <ApplicationContext.Provider value={appState}>
         <AppDrawer />
-        <Main open={drawerState.isOpen} sx={{ p: 0, border: '0px solid black' }}>
-            <RequestBuilder />
-            <HttpResponses />
+        <Main open={appState.isDrawerOpen} sx={{ p: 0, border: '0px solid black' }}>
+            <HttpExchangeContext.Provider value={httpExchangeHolder}>
+              <RequestBuilder />
+              <HttpResponses />
+            </HttpExchangeContext.Provider>
         </Main>
-        </DrawerContext.Provider>
+        </ApplicationContext.Provider>
       </Box>
     </ThemeProvider>
   );

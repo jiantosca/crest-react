@@ -2,14 +2,12 @@ import * as React from 'react';
 import { ButtonGroup, Card, CardHeader, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Stack, Tooltip, Typography } from "@mui/material"
 import { HttpHighlighter } from "./HttpHighlighter";
 import { RcUtils } from '../support/RestClientUtils';
-import { HttpExchangeContext } from "../support/RestClientUtils"
+import { HttpExchange } from "../support/RestClientUtils"
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ReplayIcon from '@mui/icons-material/Replay';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
-import DeleteIcon from '@mui/icons-material/Delete';
 import WrapTextIcon from '@mui/icons-material/WrapText';
-import ShareIcon from '@mui/icons-material/Share';
 import SaveIcon from '@mui/icons-material/Save';
 import HttpIcon from '@mui/icons-material/Http';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
@@ -17,9 +15,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloseIcon from '@mui/icons-material/Close';
 import IosShareIcon from '@mui/icons-material/IosShare';
-import { Padding } from '@mui/icons-material';
 
-export const HttpResponseCard = ({ exchange }: { exchange: HttpExchangeContext }) => {
+export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpExchange, deleteCallBack: (id: string) => void }) => {
     const renderCounter = React.useRef(0)
     console.log(`<HttpResponseCard /> rendered ${++renderCounter.current} times`)
 
@@ -29,7 +26,7 @@ export const HttpResponseCard = ({ exchange }: { exchange: HttpExchangeContext }
     }
 
     const handleDelete = () => {
-        console.log("TODO Handle DELETE. Need to figure out how to clean up any listeners and whatever else.");
+        deleteCallBack(exchange.id)
     }
 
     const [moreAnchorEl, setMoreAnchorEl] = React.useState<null | HTMLElement>(null)
@@ -58,9 +55,24 @@ export const HttpResponseCard = ({ exchange }: { exchange: HttpExchangeContext }
     const iconDeleteColor = 'warning'
 
     return (
-        <Card elevation={RcUtils.defaultElevation}>
+        <Card elevation={RcUtils.defaultElevation} >
+            {/* not getting ellipsis to work, but this does ensure long titles don't push the action buttons 
+            off the card
+            https://stackoverflow.com/questions/61675880/react-material-ui-cardheader-title-overflow-with-dots */}
             <CardHeader
-                sx={{ padding: '10px 15px 0px 15px' }}
+                sx={{ 
+                    padding: '10px 15px 0px 15px', 
+
+                    //we can do stuff below to make the card header title overflow but i can't get
+                    //elipsis to work.  I think it's because the title is a stack of elements and not a single
+                    //{"title..."}. Or i can comment below, and uncomment the stuff under url typography for 
+                    //wrapping instead.
+                    display: "flex",
+                    overflow: "hidden",
+                    "& .MuiCardHeader-content": {
+                        overflow: "hidden",
+                    }
+                }}
                 title={
                     <Stack direction='row' spacing={1.25} border={0} alignItems="center">
                         <Typography component="div" sx={{
@@ -70,19 +82,28 @@ export const HttpResponseCard = ({ exchange }: { exchange: HttpExchangeContext }
                             // color: (theme) => theme.palette.text.primary
                             color: 'white',
                             fontWeight: 'bold',
-                            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)'
+                            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
+                            fontSize: '1.05rem'
                         }}>{exchange.response.statusCode}</Typography>
-                        <Typography>{exchange.request.method}</Typography>
-                        <Typography>{exchange.request.url}</Typography>
-
+                        <Typography sx={{
+                            fontSize: '1.05rem',
+                        }}
+                        >{exchange.request.method}</Typography>
+                        <Typography sx={{
+                            fontSize: '1.05rem'
+                            // overflowWrap: "break-word",
+                            // wordBreak: 'break-word',
+                        }}>{exchange.request.url}</Typography>
                     </Stack>
                 }
+
+
                 // subheader={
                 //     'September 14, 2016'
                 // }
+
                 action={
-                    <>
-                        <ButtonGroup orientation='horizontal' aria-label='response button group'>
+                        <ButtonGroup sx={{pl: '10px'}} orientation='horizontal' aria-label='response button group'>
                             <Tooltip title='Toggle word wrap'>
                                 <IconButton aria-label="rerun" size={iconSize} onClick={toggleWordWrap}>
                                     <WrapTextIcon color={iconColor} />
@@ -111,16 +132,15 @@ export const HttpResponseCard = ({ exchange }: { exchange: HttpExchangeContext }
                                 {/* <DeleteIcon color={iconDeleteColor} /> */}
                                 <CloseIcon color={iconDeleteColor} />
                             </IconButton>
-                        </ButtonGroup>
-                        <Menu id='more-menu'
+                            <Menu id='more-menu'
                             anchorEl={moreAnchorEl}
                             open={isMoreOpen}
                             MenuListProps={{ 'aria-labelledby': 'resources-button' }}
                             onClose={handleMoreClose}
                             // Checkout popover link below for more details on how to position the menu
                             // https://mui.com/material-ui/react-popover/
-                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            // anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            // transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                         >
                             <MenuList>
                                 <MenuItem onClick={handleMoreClose}>
@@ -145,7 +165,7 @@ export const HttpResponseCard = ({ exchange }: { exchange: HttpExchangeContext }
                                 </MenuItem>
                             </MenuList>
                         </Menu>
-                    </>
+                        </ButtonGroup>
                 }
             />
             <HttpHighlighter headersAndBody={exchange.response.headersAndBody} wordWrap={wordWrap} />

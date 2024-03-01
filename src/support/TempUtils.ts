@@ -1,4 +1,4 @@
-import { HttpExchangeContext } from "./RestClientUtils"
+import { HttpExchange } from "./RestClientUtils"
 
 export class TempUtils {
 
@@ -258,11 +258,6 @@ export class TempUtils {
         'http://localhost:8181/channel-paths',
         'http://localhost:8181/content-report',
         'http://localhost:8181/content-tag-paths',
-        'http://localhost:8181/content/experience-fragments/tiaa/MyTIAA/DAP/GoalTracker.tiaamodel.json',
-        'http://localhost:8181/content/experience-fragments/tiaa/MyTIAA/DAP/MDL_modal-retirement-how-calculated.tiaamodel.json',
-        'http://localhost:8181/content/experience-fragments/tiaa/MyTIAA/DAP/SelectYourGoal.tiaamodel.json',
-        'http://localhost:8181/content/experience-fragments/tiaa/MyTIAA/DAP/selectGoalRetirementDAP.tiaamodel.json',
-        'http://localhost:8181/content/experience-fragments/tiaa/UD/TRANSFERS/Header.tiaamodel.json',
         'http://localhost:8181/contents',
         'http://localhost:8181/countries',
         'http://localhost:8181/countries/AF',
@@ -303,19 +298,6 @@ export class TempUtils {
         'https://api.weatherbit.io/v2.0/subscription/usage?key=3487b81e93224793b3e0143c8db8cd9d',
         'https://google.com',
         'https://home.nest.com/session',
-        'https://mobile.tiaa-cref.org/private/api/ext-irest/phs/4684729/pducts?version=1.1',
-        'https://mobile.tiaa-cref.org/private/api/irest/phs/4684729/pducts?version=1.1',
-        'https://origin-publictools-it1.test.tiaa-cref.org/as/token.oauth2',
-        'https://origin-service.tiaa-cref.org/private/api/ext-deposit-accounts-rs-v1/api/bank-users/4684729/deposit-accounts?&userinfo=true',
-        'https://origin-shared.tiaa-cref.org/private/api/ext-deposit-accounts-rs-v1/api/bank-users/4684729/deposit-accounts?mask=false&userinfo=true',
-        'https://postman-echo.com/get',
-        'https://postman-echo.com/get?whatever=bla',
-        'https://publictools.tiaa-cref.org/as/token.oauth2',
-        'https://service.tiaa-cref.org/private/api/ext-deposit-accounts-rs-v1/api/bank-users/4684729/deposit-accounts?mask=false&userinfo=true',
-        'https://service.tiaa-cref.org/private/api/saviconsumer/ping',
-        'https://shared.tiaa-cref.org/private/api/irest/phs/4684729/pducts?version=1.1',
-        'https://shared.tiaa.org/private/accounthome/api/summary/hsaData',
-        'https://shared.tiaa.org/private/accounthome/api/summary/overlay',
         'https://status.plaid.com/api/v2/status.json',
         'https://whois-history.whoisxmlapi.com/api/v1?apiKey=at_p1ClJahsw9MJkIGw1tedeZB3VqFGg&domainName=antifa.com&mode=preview',
         'https://whois-history.whoisxmlapi.com/api/v1?apiKey=at_p1ClJahsw9MJkIGw1tedeZB3VqFGg&domainName=antifa.com&mode=purchase',
@@ -323,12 +305,14 @@ export class TempUtils {
         'https://www.ndbc.noaa.gov/data/latest_obs/latest_obs.txt']
     
 
-    static httpExchangeContext1: HttpExchangeContext = {
+    static createHttpExchangeContext1(id: string, dateString: string): HttpExchange {
+    return{
+      id: id,
       timedout: false,
       aborted: false,
       request: { 
         method: 'GET',
-        url: 'https://origin-service.tiaa-cref.org/private/api/ext-deposit-accounts-rs-v1/api/bank-users/4684729/deposit-accounts?&userinfo=true',
+        url: 'https://api.monarchmoney.com/graphql/kljlj/jkljlk/lkjljkl/lkjlkjs/3lkjslkjd/ljklkjsdf/lkjsldkjfljks/sljslkjs',
         headers: [
           { name: 'accept', value: 'application/json' },
           { name: 'accept-encoding', value: 'gzip, deflate, br' },
@@ -348,7 +332,7 @@ user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
         statusCode: 200,
         headers: [ 
           { name: 'content-type', value: 'application/json' },
-          { name: 'date', value: 'Mon, 19 Feb 2024 13:58:37 GMT' },
+          { name: 'date', value: dateString },
           { name: 'x-powered-by', value: 'Express' },
           { name: 'x-ratelimit-limit', value: '1000' },
           { name: 'x-ratelimit-remaining', value: '999' },
@@ -356,7 +340,7 @@ user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
         ],
         headersAndBody: 
 `content-type: application/json
-date: Mon, 19 Feb 2024 13:58:37 GMT
+date: ${dateString}
 x-powered-by: Express
 x-ratelimit-limit: 1000
 x-ratelimit-remaining: 999
@@ -367,17 +351,19 @@ x-ratelimit-reset: 1708351170
   "id": 1,
   "name": "id labore ex et quam laborum",
   "email": "Eliseo@gardner.biz",
-  "body": "jpi laudantium enim quasi est quidem magnam voluptate ipsam eos tempora quo necessitatibus dolor quam autem quasi reiciendis et nam sapiente accusantium"
+  "body": "https://api.monarchmoney.com/graphql/kljlj/jkljlk/lkjljkl/lkjlkjs/3lkjslkjd/ljklkjsdf/lkjsldkjfljks/sljslkjssdfjpi laudantium enim quasi est quidem magnam voluptate ipsam eos tempora quo necessitatibus dolor quam autem quasi reiciendis et nam sapiente accusantium"
 }`        
       }
     }
-
-    static httpExchangeContext2: HttpExchangeContext = {
+  }
+  static createHttpExchangeContext2(id: string, dateString: string): HttpExchange {
+    return {
+      id: id,
       timedout: false,
       aborted: false,
       request: { 
         method: 'GET',
-        url: 'http://localhost:8080/posts/1',
+        url: 'https://api.monarchmoney.com/graphql/kljlj/jkljlk/lkjljkl/lkjlkjs/3lkjslkjd/ljklkjsdf/lkjsldkjfljks/sljslkjs',
         headers: [
           { name: 'accept', value: 'application/json' },
           { name: 'accept-encoding', value: 'gzip, deflate, br' },
@@ -399,7 +385,7 @@ user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
         statusCode: 501,
         headers: [
           { name: 'content-type', value: 'application/xml' },
-          { name: 'date', value: 'Mon, 19 Feb 2024 13:58:37 GMT' },
+          { name: 'date', value: dateString },
           { name: 'x-powered-by', value: 'Express' },
           { name: 'x-ratelimit-limit', value: '1000' },
           { name: 'x-ratelimit-remaining', value: '999' },
@@ -407,7 +393,7 @@ user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
         ],
         headersAndBody: 
 `content-type: application/xml
-date: Mon, 19 Feb 2024 13:58:37 GMT
+date: ${dateString}
 x-powered-by: Express
 x-ratelimit-limit: 1000
 x-ratelimit-remaining: 999
@@ -427,8 +413,9 @@ x-ratelimit-reset: 1708351170
 </note>`        
       }
     }    
-
-    static httpExchangeContext3: HttpExchangeContext = {
+  }
+    static httpExchangeContext3: HttpExchange = {
+      id: 'temp-3',
       timedout: false,
       aborted: false,
       request: { 
@@ -457,7 +444,7 @@ user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
         ],
         headersAndBody: 
 `content-type: application/json
-date: Mon, 19 Feb 2024 13:58:37 GMT
+date: placeholder
 x-powered-by: Express
 x-ratelimit-limit: 1000
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useDrawerContext } from '../support/Context';
+import { useApplicationContext } from '../support/Context';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 
@@ -11,7 +11,7 @@ export const HttpHighlighter = (
     const renderCounter  = React.useRef(0)
     console.log(`<HttpHighlighter /> rendered ${++renderCounter.current} times`)
     
-    const drawerState = useDrawerContext()
+    const drawerState = useApplicationContext()
 
     return (
         <SyntaxHighlighter 
