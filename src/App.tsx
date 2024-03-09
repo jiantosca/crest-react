@@ -9,7 +9,10 @@ import { RequestBuilder } from './components/RequestBuilder'
 import { ApplicationContext, Application, HttpExchangeContext, HttpExchangeHolder } from './support/Context';
 import { AppDrawer } from './components/AppDrawer';
 import { HttpResponses } from './components/HttpResponses';
+import { DevNotes } from './components/DevNotes';
+import { AppDialog, AppDialogStateType, closedAppDialogState, appDialogEventType } from './components/AppDialog';
 
+const devMode = window.location.href.includes('installType=development') || window.location.href.startsWith('http');
 
 const drawerWidth = 260
 const Main = styled('main', { shouldForwardProp: (prop) => { return prop !== 'open' } })<{
@@ -31,7 +34,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => { return prop !== 'op
   }),
 }));
 
-function App() {
+function App() { 
   const renderCounter = React.useRef(0)
   console.log(`<App /> rendered ${++renderCounter.current} times`)
 
@@ -44,7 +47,7 @@ function App() {
   // const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
 
   const [httpExchangeHolder, setHttpExchangeHolder] = React.useState<HttpExchangeHolder>({value:undefined})
-
+  
   const [appState, setAppState] = React.useState<Application>({
     isDrawerOpen: false,
     isDarkMode: true,//pull from local storage or just stick with 
@@ -57,8 +60,21 @@ function App() {
       appState.isDarkMode = !appState.isDarkMode
       setAppState({ ...appState })
     },
-    setHttpExchangeHolder: (exchangeHolder: HttpExchangeHolder) => {
-      setHttpExchangeHolder(exchangeHolder)
+    showDialog: (title: string, content: React.ReactElement) => {
+      const dialogState: AppDialogStateType = { 
+        isOpen: true,
+        dividers: false,
+        title: title,
+        content: content
+      }
+      const event = new CustomEvent(appDialogEventType, {detail: dialogState});
+      document.dispatchEvent(event);
+      console.log('showDialog')
+    }, 
+    hideDialog: () => {
+      const event = new CustomEvent(appDialogEventType, {detail: closedAppDialogState});
+      document.dispatchEvent(event);
+      console.log('closeDialog')
     }
   });
 
@@ -74,6 +90,9 @@ function App() {
     }
   });
 
+  React.useEffect(()=> {
+    console.log('<App /> - init stuff goes in here when needed.')
+  }, [])
 
   return (
     
@@ -83,13 +102,15 @@ function App() {
       components are using the correct color scheme, but the scroll bar is not. */}
         <CssBaseline enableColorScheme/>
         <ApplicationContext.Provider value={appState}>
-        <AppDrawer />
-        <Main open={appState.isDrawerOpen} sx={{ p: 0, border: '0px solid black' }}>
-            <HttpExchangeContext.Provider value={httpExchangeHolder}>
-              <RequestBuilder />
-              <HttpResponses />
-            </HttpExchangeContext.Provider>
-        </Main>
+          <AppDrawer />
+          <Main open={appState.isDrawerOpen} sx={{ p: 0, border: '0px solid black' }}>
+              <HttpExchangeContext.Provider value={{httpExchangeHolder, setHttpExchangeHolder}}>
+                <RequestBuilder />
+                <HttpResponses />
+              </HttpExchangeContext.Provider>
+              {devMode && <DevNotes />}
+          </Main>
+          <AppDialog />
         </ApplicationContext.Provider>
       </Box>
     </ThemeProvider>
@@ -97,3 +118,5 @@ function App() {
 }
 
 export default App;
+
+

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ButtonGroup, Card, CardHeader, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Stack, Tooltip, Typography } from "@mui/material"
 import { HttpHighlighter } from "./HttpHighlighter";
 import { RcUtils } from '../support/RestClientUtils';
-import { HttpExchange } from "../support/RestClientUtils"
+import { HttpExchange } from "../support/type.http-exchange"
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ReplayIcon from '@mui/icons-material/Replay';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -26,7 +26,7 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
     }
 
     const handleDelete = () => {
-        deleteCallBack(exchange.id)
+        deleteCallBack(exchange.request.id)
     }
 
     const [moreAnchorEl, setMoreAnchorEl] = React.useState<null | HTMLElement>(null)
@@ -53,9 +53,17 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
     const iconSize = RcUtils.iconButtonSize
     const iconColor = 'inherit'
     const iconDeleteColor = 'warning'
+    
+    // I was playing with below, and all the sudden every instance of this comp was getting rerednered when new 
+    // response was added. Not sure why cause theme wasn't changing. 
+    //import { useTheme } from '@mui/material/styles';
+    //const theme = useTheme()
+    // console.log({theme})
 
+    // sample of how you can feed in/use theme for sx
+    // sx={{border: '1px solid white', background: (theme) => theme.palette.background.paper}}
     return (
-        <Card elevation={RcUtils.defaultElevation} >
+        <Card elevation={RcUtils.defaultElevation}>
             {/* not getting ellipsis to work, but this does ensure long titles don't push the action buttons 
             off the card
             https://stackoverflow.com/questions/61675880/react-material-ui-cardheader-title-overflow-with-dots */}
@@ -74,7 +82,8 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                     }
                 }}
                 title={
-                    <Stack direction='row' spacing={1.25} border={0} alignItems="center">
+                    // .3 padding on the bottom cause action buttons were 
+                    <Stack direction='row' spacing={1.25} border={0} alignItems="center" pb={.3}>
                         <Typography component="div" sx={{
                             backgroundColor: (theme) => exchange.response.statusCode < 400 ? theme.palette.success.main : theme.palette.error.main,
                             borderRadius: '5px', // Adjust this to change the roundness of the corners
@@ -168,7 +177,7 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                         </ButtonGroup>
                 }
             />
-            <HttpHighlighter headersAndBody={exchange.response.headersAndBody} wordWrap={wordWrap} />
+            <HttpHighlighter httpResponse={exchange.response} wordWrap={wordWrap} />
         </Card>
     )
 }

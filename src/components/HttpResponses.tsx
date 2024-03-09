@@ -1,15 +1,31 @@
 import { Stack } from '@mui/material'
 import * as React from 'react'
 import { HttpResponseCard } from './HttpResponseCard'
-import { TempUtils } from '../support/TempUtils';
-import { useApplicationContext, HttpExchangeContext } from '../support/Context';
-import { RcUtils } from '../support/RestClientUtils'
+import { useApplicationContext, useHttpExchangeContext } from '../support/Context';
 
 /**
  * This component is responsible for rendering the http responses via HttpResponseCard. It's basically a kind
- * of wrapper for all responses that controls the layout and positioning of the cards taking into account 
- * the drawer state and scrollbar visibility. When the drawer is open or the vertical scrollbar is visible,
- * the width of the responses section is set accordingly (with help from css calc). 
+ * of wrapper for all responses.
+ * 
+ * After a week I forgot the intracacies of how this component knows when to render a new response so will 
+ * try to elaborate. 
+ *  - App.tsx is the component that renders this component as well as the request buider component from which
+ *    new requests are made and hence should cause this coponent to render a response. 
+ *  - The App.tsx component has a state variable called httpExchangeHolder which is just a wrapper/holder for
+ *    a HttpExchange object. This holder is exposed to this component as well as the request builder through
+ *    the use of the HttpExchangeContext. The provider is setup in App.tsx since it's the parent of both this
+ *    and the request builder component.
+ *  - When a new request is submitted in the request builder component, it updates the httpExchangeHolder with a
+ *    new http exchange object causing App.tsx to re-render and that causes this component to re-render as well 
+ *    since it's a child component. 
+ *  - When this component renders/re-renders, it checks the httpExchangeHolder for a value and if it finds
+ *    one (which it will if someone just submitted a request), it creates a new HttpResponseCard component and 
+ *    adds it to the responses state variable (an array of HttpResponseCards) causing this component to re-render 
+ *    with the new HttpResponseCard. Interestingly, react is smart enough not to re-render the any existing 
+ *    HttpResponseCards in the responses state variable.
+ *  - This component also sets the value in the httpExchangeHolder to undefined so that it doesn't keep creating
+ *    new HttpResponseCard components every time it renders.
+ *  
  * 
  * @returns HttpResponses component
  */
@@ -18,7 +34,7 @@ export const HttpResponses = () => {
     console.log(`<HttpResponses /> rendered ${++renderCounter.current} times`)
 
     const [responses, setResponses] = React.useState<React.ReactElement[]>([])
-    const httpExchangeHolder = React.useContext(HttpExchangeContext)
+    const {httpExchangeHolder} = useHttpExchangeContext()
     const appState = useApplicationContext()
 
     const deleteCallBack = (id: string) => { 
@@ -33,52 +49,33 @@ export const HttpResponses = () => {
     }
 
     if(httpExchangeHolder.value) {
-      const id = httpExchangeHolder.value.id
+      const id = httpExchangeHolder.value.request.id
+      const newExchange = httpExchangeHolder.value
+
+      console.log('<HttpResponses - setting httpExchangeHolder.value to undefined>')
+      httpExchangeHolder.value = undefined //prevent an inifinate loop!
 
       setResponses([
           <HttpResponseCard 
             key={id} 
-            exchange={httpExchangeHolder.value} 
+            exchange={newExchange} 
             deleteCallBack={deleteCallBack} />, 
           ...responses])
-      httpExchangeHolder.value = undefined
     }
    
     /**
      * Start code supporting the drawer state and scrollbar visibility so we cant figure out the width of 
      * the responses section.
      */
-    const [isScrollbarVisible, setIsScrollbarVisible] = React.useState(false);
-
-    const checkIfScrollbarVisible = () => {
-        const hasVerticalScrollbar = window.innerWidth > document.documentElement.clientWidth;
-        setIsScrollbarVisible(hasVerticalScrollbar);
-      };
-
-      React.useEffect(() => {
-        window.addEventListener('resize', checkIfScrollbarVisible);
-        window.addEventListener('scroll', checkIfScrollbarVisible);
-    
-        return () => {
-          window.removeEventListener('resize', checkIfScrollbarVisible);
-          window.removeEventListener('scroll', checkIfScrollbarVisible);
-        };
-      }, []);//called only once when component mounts because **empty** dependency array.
-      
-      React.useEffect(() => {
-        // adding/removing things from the dom can change scrollbar visibility w/out any resize/scroll event
-        // so let's trigger a scroll event to ensure we have the correct isScrollbarVisible state and 
-        // set the widthOffset accordingly.
-        RcUtils.dispatchFantomScroll();
-      });// called every time the component renders because **no** dependency array.
 
 
-    let widthOffset = appState.isDrawerOpen ? appState.drawerWidth + 40 : 40
-    widthOffset = isScrollbarVisible ? widthOffset + 15 : widthOffset
+    let widthOffset = appState.isDrawerOpen ? appState.drawerWidth + 55 : 55
 
     return (
         <Stack rowGap={2.5} marginBottom={5}
             sx={{ padding: '0px', ml: '20px', mr: '20px', maxWidth: `calc(100vw - ${widthOffset}px)` }}>
+            {/* <MyAutoComplete />
+            <MyAutoComplete3 /> */}
             {responses}
         </Stack>
     )

@@ -1,44 +1,46 @@
 import * as React from 'react'
-import { HttpExchange } from './RestClientUtils'
+import { HttpExchange } from './type.http-exchange'
 
 
 //maybe i should rename this to UiContext or AppUiContext
-export interface Application {
+export type Application = {
     isDrawerOpen: boolean
     isDarkMode: boolean
     drawerWidth: number
     toggleDarkMode: () => void
     toggleDrawer: () => void
-    setHttpExchangeHolder: (exchange: HttpExchangeHolder) => void
-    // setHttpExchange: (exchange: HttpExchange) => void | undefined
-    // setAppState: (appState: Application) => void | undefined
+    showDialog: (title: string, children: React.ReactElement) => void
+    hideDialog: () => void
 }
 export const ApplicationContext = React.createContext<Application | undefined>(undefined);
 export const useApplicationContext = () => {
-    const app = React.useContext(ApplicationContext)
+    const context = React.useContext(ApplicationContext)
 
-    if(app === undefined) {
+    if(context === undefined) {
         throw new Error('useApplicationContext must be used with ApplicationContext. ' + 
             'You\'re missing <ApplicationContext.Provider> in one of your components that sets it up.')
     }
 
-    return app
+    return context
 }
 
 
-export interface HttpExchangeHolder {
+export type HttpExchangeHolder = {
     value: HttpExchange | undefined
 }
+export type HttpExchangeContextType = {
+    httpExchangeHolder: HttpExchangeHolder
+    setHttpExchangeHolder: React.Dispatch<React.SetStateAction<HttpExchangeHolder>>;
+}
+export const HttpExchangeContext = React.createContext<HttpExchangeContextType|undefined>(undefined);
 
-export const HttpExchangeContext = React.createContext<HttpExchangeHolder>({value: undefined});
+export const useHttpExchangeContext = () => {
+    const context = React.useContext(HttpExchangeContext)
 
-// export const useCurrentHttpExchangeContext = () => {
-//     const http = React.useContext(CurrentHttpExchangeContext)
+    if(context === undefined) {
+        throw new Error('useHttpExchangeContext must be used with HttpExchangeContext. ' + 
+            'You\'re missing <HttpExchangeContext.Provider> in one of your components that sets it up.')
+    }
 
-//     if(http === undefined) {
-//         throw new Error('useHttpExchangeContext must be used with CurrentHttpExchangeContext. ' + 
-//             'You\'re missing <HttpExchangeContext.Provider> in one of your components that sets it up.')
-//     }
-
-//     return http
-// }
+    return context
+}

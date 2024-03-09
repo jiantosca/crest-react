@@ -1,25 +1,25 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "name": "Rest Client",
+  
+  "version": "0.0.1",
+  
+  "manifest_version": 3,
+  "description": "RESTful service tester.",
+    "icons": {
+    "16": "images/icon.png",
+    "32": "images/icon.png",
+    "48": "images/icon.png",
+    "128": "images/icon.png"
+  },
+  
+  "action": {
+  	"default_icon": "images/icon.png",
+    "default_title": "Rest Client"
+  },
+  "background": {
+    "service_worker": "serviceWorker/background.js",
+    "type": "module"
+  },
+  "permissions": ["management", "cookies", "storage", "unlimitedStorage"],
+  "host_permissions": ["http://*/*", "https://*/*", "file:///*/*"]
 }

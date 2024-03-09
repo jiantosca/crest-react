@@ -2,14 +2,41 @@ import * as React from 'react'
 import { RcUtils } from '../support/RestClientUtils'
 import {
   Paper, Stack, InputLabel, MenuItem,Select, FormControl,
-  Autocomplete, TextField, IconButton, Box } 
+  Autocomplete, TextField, IconButton, Box, Typography, Alert } 
   from '@mui/material'
 import SendIcon from '@mui/icons-material/Send'
 import MenuIcon from '@mui/icons-material/Menu'
-import { useApplicationContext } from '../support/Context'
+import { useApplicationContext, useHttpExchangeContext } from '../support/Context'
 import { LoadingButton } from '@mui/lab'
-import { TempUtils } from '../support/TempUtils'
+import { Storage } from '../support/Storage'
+import { HttpExchange, HttpRequest, NameValuePair } from '../support/type.http-exchange'
+import { HttpExchangeHandler } from '../support/http-exchange-handler'
+import { RequestHeaderAutocomplete } from './RequestHeaderAutocomplete'
 
+/**
+ * 
+ * The RequestionBuilder is mostly composed of other components to help build http requests. In order
+ * of how they show up in the UI, they are:
+ * 
+ * 1. BurgerMenu - a hamburger menu icon that when clicked toggles the drawer open/closed.
+ * 2. MethodDropDown - a dropdown to select the http method (GET, POST, PUT, DELETE, etc).
+ * 3. UrlAutoComplete - an autocomplete component for the url input.
+ * 4. SendButton - a button to send the http request.
+ * 5. RequestHeaderAutocomplete - an autocomplete component for the headers input. This is the only 
+ *    component imported from it's own file since it's not so simple.
+ * 6. BodyInput - a text area for the body input.
+ * 
+ * A few other things to note:
+ *   - The RequestBuilder centralizes all the data needed to submit request through the use of various
+ *     state vars, and refs that it passes down to the child components.
+ *   - The RequestBuilder also centralizes the logic to submit the request through the use of a callback
+ *     method that it passes down to the SendButton component.
+ *   - The RequestBuilder also has logic deal with responses through the use of a callback sent to the
+ *     HttpExchangeHandler.submitRequest method. When a successful response is received, the RequestBuilder
+ *     store the url and headers in storage for auto complete suggestions. Then it will set the httpExchangeHolder
+ *     through the use of the useHttpExchangeContext custom hook which triggers rendering of the HttpResponses
+ *     that will include the new response in the UI. More details on  how this works in the HttpResponses component.
+ */
 export const RequestBuilder = () => {
   const renderCounter = React.useRef(0)
   renderCounter.current++
@@ -23,26 +50,84 @@ export const RequestBuilder = () => {
   const [method, setMethod] = React.useState<string>('GET')
   React.useEffect(() => {
     ['POST', 'PUT'].includes(method) ? setBodyDisplay('') : setBodyDisplay('none')
-    //see comments in RcUtils.dispatchFantomScroll() for why we dispatch a scroll event here.
-    RcUtils.dispatchFantomScroll()
   }, [method])
 
   //use ref this time since no need to rerender this comp when url changes
-  const urlRef = React.useRef<string>('https://some.initial/url/to-be-removed')
+  const urlRef = React.useRef<string>('http://localhost:8080/crest-api/test?mock=json.json')
   const headersRef = React.useRef<string>('')
   const bodyRef = React.useRef<string>('')
 
-  const appState = useApplicationContext()
+  const appContext = useApplicationContext()
+  const {setHttpExchangeHolder} = useHttpExchangeContext()
 
-  const sendClickCallback = (event: React.MouseEvent<HTMLButtonElement>) => {
-    console.log(`\n*******************************************************`)
-    console.log(`${method} ${urlRef.current}`)
-    console.log(`\n${headersRef.current}`)
-    console.log(`\n${bodyRef.current}`)
-    console.log(`*******************************************************\n\n`)
+  const sendClickCallback = async (event: React.MouseEvent<HTMLButtonElement>) => {
+
+    const headerLines = headersRef.current.trim().split('\n')
+        .filter(header => header.trim() !== '')
+
+    const problems: string[] = []
+
+    if(urlRef.current.trim() === '' || !urlRef.current.startsWith('http')) {
+      problems.push('Enter a valid URL that starts with http or https')
+    }
+
+    const headerNameValues: NameValuePair[] = (headerLines.length > 0) ?
+      headerLines.map(header => {
+        const [name, ...value] = header.split(':');
+        if(value.length === 0) {
+          problems.push(`"${name}" doesn't appear to be a valid header`)
+        }
+        return {name: name, value: value.join(':').trim()} as NameValuePair
+      }) : []
+
+    if(problems.length > 0) {
+      //simple list...
+      // const problemListItems = problems.map(problem => <ListItem><ListItemText>{problem}</ListItemText></ListItem>)
+      // appContext.showDialog('Request Issues', <List dense>{problemListItems}</List>)
+      const problemListItems = problems.map(problem => <Alert severity="error"><Typography>{problem}</Typography></Alert>)
+      appContext.showDialog('Invalid Request', <Stack sx={{ width: '100%', pt: 1 }} spacing={2}>{problemListItems}</Stack>)
+      return
+    }
     const guid = RcUtils.generateGUID()
-    const exchange = (renderCounter.current % 2 === 0) ? TempUtils.createHttpExchangeContext1(guid, guid) : TempUtils.createHttpExchangeContext2(guid, guid)
-    appState.setHttpExchangeHolder({ value: exchange })
+
+    const httpRequest: HttpRequest = {
+      id: guid,
+      method: method,
+      url: urlRef.current,
+      headers: headerNameValues,
+      body: (bodyRef.current.trim()) ? bodyRef.current.trim() : undefined
+    }
+
+    const httpExchangeCallback = (httpExchange: HttpExchange) => {
+      console.log(httpExchange)
+      if(!RcUtils.isExtensionRuntime()) {
+        httpExchange.response.headers.push({name: 'headers-suppressed', value: 'because not running as extension (see fetch & Access-Control-Expose-Headers)'})
+      }
+      if(httpExchange.response.statusCode === 0) {
+        appContext.showDialog('Network Error', 
+          <Alert severity="error">
+            {/* component='div' so each typography is on a new line */}
+            <Typography component="div">No response from the server. Ensure your URL is correct.</Typography>
+            {httpExchange.request.url.startsWith('https') && <Typography component="div" pt={1}>This could also be due to SSL issues. You could add an exception in chrome if appropriate.</Typography>}
+          </Alert>)
+
+          return //return so we don't paint a response with a 0 status code
+      }
+
+      if(httpExchange.response.statusCode < 300) {
+        Storage.storeUrl(httpRequest.url)
+        Storage.storeHeaders(headerLines)
+      }
+      setHttpExchangeHolder({value: httpExchange});
+    }
+    
+    if(RcUtils.isExtensionRuntime()) {
+      console.log('RequestBuilder.sendClickCallback running as extension')
+      chrome.runtime.sendMessage(httpRequest, httpExchangeCallback);
+    } else {
+      console.log('RequestBuilder.sendClickCallback not running as extension')
+      new HttpExchangeHandler(httpRequest).submitRequest(httpExchangeCallback)
+    }
   }
 
   return (
@@ -52,7 +137,7 @@ export const RequestBuilder = () => {
       sx={{ borderRadius: '0px 0px 4px 4px', padding: '20px', margin: '0px 20px 20px 20px' }}
     >
       <Stack direction='row' spacing={1.5}>
-        {!appState.isDrawerOpen && <BurgerMenu />}
+        {!appContext.isDrawerOpen && <BurgerMenu />}
         <MethodDropDown methodValue={method} setMethodValue={setMethod} />
         <UrlAutoComplete urlRef={urlRef} />
         <SendButton sendClickCallback={sendClickCallback} />
@@ -62,7 +147,7 @@ export const RequestBuilder = () => {
         */}
       </Stack>
       <Stack direction='column' spacing={1.5} marginTop={2}>
-        <HeadersInput headersRef={headersRef}/>
+        <RequestHeaderAutocomplete headersRef={headersRef}/>
       </Stack>
       <Stack direction='column' spacing={1.5} marginTop={2}
         sx={{ display: bodyDisplay }}
@@ -131,7 +216,7 @@ const UrlAutoComplete = ({urlRef} : {urlRef: React.MutableRefObject<string>}) =>
       size={RcUtils.defaultSize}
       fullWidth
       autoHighlight
-      renderInput={(urls) => <TextField {...urls} variant={RcUtils.defaultVariant} label='URL' />}
+      renderInput={(props) => <TextField {...props} variant={RcUtils.defaultVariant} label='URL' />}
       value={urlRef.current}
       onChange={(event: any, newUrl: string | null) => urlRef.current = newUrl || ''}
       onInputChange={(event: any, newUrl: string | null) => urlRef.current = newUrl || ''}
@@ -184,26 +269,6 @@ const SendButton = ({ sendClickCallback }: any) => {
   )
 }
 
-const HeadersInput = ({headersRef} : {headersRef: React.MutableRefObject<string>}) => {
-  const renderCounter = React.useRef(0)
-  console.log(`<HeadersInput /> rendered ${++renderCounter.current} times`)
-
-  // const handleChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
-  //   const newHeaders = event.target.value 
-  //   headersRef.current = newHeaders
-  // }
-
-  return (
-    <TextField
-      id="standard-multiline-flexible"
-      label="Headers"
-      // onChange={handleChange}
-      onChange={(event) => headersRef.current = event.target.value }
-      multiline
-      variant={RcUtils.defaultVariant}
-    />
-  )
-}
 const BodyInput = ({bodyRef} : {bodyRef: React.MutableRefObject<string>}) => {
   const renderCounter = React.useRef(0)
   console.log(`<BodyInput /> rendered ${++renderCounter.current} times`)

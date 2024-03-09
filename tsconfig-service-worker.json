@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+      "outDir": "./build",
+      "target": "es2022",
+      "allowJs": true,
+      "module": "esnext",
+      "moduleResolution": "node"
+    },
+    "include": [
+      "./serviceWorker/background.ts"
+    ]
+  }
+  
