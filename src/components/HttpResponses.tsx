@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material'
 import * as React from 'react'
 import { HttpResponseCard } from './HttpResponseCard'
-import { useApplicationContext, useHttpExchangeContext } from '../support/context';
+import { useApplicationContext, useHttpExchangeContext } from '../support/react-contexts';
 
 /**
  * This component is responsible for rendering the http responses via HttpResponseCard. It's basically a kind

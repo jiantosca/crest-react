@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Dialog, DialogTitle, DialogContent, IconButton, Paper } from '@mui/material';
-import { useApplicationContext } from '../support/context'
+import { useApplicationContext } from '../support/react-contexts'
 import CloseIcon from '@mui/icons-material/Close';
 import { RcUtils } from '../support/rest-client-utils';
 

@@ -3,9 +3,9 @@ import { Storage } from '../support/storage'
 import SendIcon from '@mui/icons-material/Send'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import { RcUtils } from '../support/rest-client-utils'
-import { HttpExchangeHandler } from '../support/http-exchange-handler'
-import { useApplicationContext, useHttpExchangeContext } from '../support/context'
-import { HttpExchange, HttpRequest, NameValuePair } from '../support/type.http-exchange'
+import { HttpExchangeHandler } from '../support/http-exchange'
+import { useApplicationContext, useHttpExchangeContext } from '../support/react-contexts'
+import { HttpExchange, HttpRequest, NameValuePair } from '../support/http-exchange'
 import { Stack, Typography, Alert, Button } from '@mui/material'
 
 
@@ -18,14 +18,14 @@ export const requestCompleteEventType = 'requestCompleteEvent'
  * it should first be disabled, and if the request is taking longer than a second then it turns into a stop button, and finally 
  * once the request is finished it goes back to original send button. So basically 3 steps...
  * 
- * 1. When the user clicks the send button, the button will be disabled. We're using state (RequestSenderButtonStateType) for this
+ * 1. When the user clicks the send button, the button will be disabled. We're using state (RequestButtonStateType) for this
  *    on click.
  * 
  * 2. If the request is taking more than one second then the button should change to a stop button. This is handled via setTimeout
  *    function. The function checks outerState.requestInFlight, and if the request is still in flight then we'll give user the stop
- *    button via setRequestSenderState.
+ *    button via setRequestButtonState.
  * 
- * 3. Finally the exchangeCompletionHandler executes using setRequestSenderState to put it back to a send button.
+ * 3. Finally the exchangeCompletionHandler executes using setRequestButtonState to put it back to a send button.
  */
 const outerState = {
   requestInFlight: false as boolean,
@@ -37,7 +37,7 @@ const outerState = {
  * Holds the state for the send button. This is used to control the button's text, icon, color, and the 
  * function it calls when clicked which can change based on the state of the request. 
  */
-type RequestSenderButtonStateType = {
+type RequestButtonStateType = {
   text: string
   icon: React.ReactNode
   color: 'primary' | 'warning'
@@ -51,11 +51,12 @@ type RequestSenderButtonStateType = {
  * 
  * When the send button is clicked, the following happens:
  * 
- * 1. A new HttpExchange is created with the method, url, headers, and body from the input fields.
+ * 1. A new HttpExchange is created with the method, url, headers, and body from the input fields of the
+ *    parent RequestBuilder component.
  * 2. Some validation is done to ensure the url is valid and the headers are valid. If invalid, a dialog
  *    lets the user know what's wrong.
- * 3. An HttpRequest is created and an HttpExchangeHandler is contructedwith it. Then  
- *    HttpExchangeHandler.submitRequest is called with a callback to  handle the response. When 
+ * 3. An HttpRequest is created and an HttpExchangeHandler is contructed with it. Then  
+ *    HttpExchangeHandler.submitRequest is called with a callback to handle the response. When 
  *    this code is running as an extention, the HttpRequest is actually passed to the background 
  *    service worker which deals with the  HttpExchangeHandler. Either  way, the HttpExchangeHandler.submitRequest 
  *    method will send the request and call the callback method when a response is received with an HttpExchange
@@ -66,7 +67,7 @@ type RequestSenderButtonStateType = {
  *    custom hook which triggers rendering of the HttpResponses compoent that will include the new response.
  *    More details on how this works in the HttpResponses component.
  */
-export const RequestSender = (
+export const RequestButton = (
   { method, urlRef, headersRef, bodyRef }: {
     method: string,
     urlRef: React.MutableRefObject<string>,
@@ -78,7 +79,7 @@ export const RequestSender = (
   // note this comp will render twice when someone updates the method in the parent RequestBuilder come. Once
   // because the method state changes, and again because parent comp has a useEffect that changes the bodyDisplay 
   // state based on the method state. No biggie, just noting it.
-  console.log(`<RequestSender /> rendered ${++renderCounter.current} times`)
+  console.log(`<RequestButton /> rendered ${++renderCounter.current} times`)
 
   const { setHttpExchangeHolder } = useHttpExchangeContext()
   const appContext = useApplicationContext()
@@ -124,7 +125,7 @@ export const RequestSender = (
      * avoid painting any kind of response.
      */
     const abortRequest = () => {
-      console.log('<RequestSender />.abortRequest')
+      console.log('<RequestButton />.abortRequest')
       outerState.requestInFlight = false
       if (RcUtils.isExtensionRuntime()) {
         chrome.runtime.sendMessage({ abortId: guid })
@@ -140,14 +141,14 @@ export const RequestSender = (
      * @returns 
      */
     const exchangeCompletionHandler = (httpExchange: HttpExchange) => {
-      console.log('<RequestSender />.exchangeCompletionHandler', httpExchange)
+      console.log('<RequestButton />.exchangeCompletionHandler', httpExchange)
 
       document.dispatchEvent(new Event(requestCompleteEventType))
 
       outerState.requestInFlight = false
       outerState.inFlightHttpExchangeHandler = undefined
 
-      setRequestSenderState({
+      setRequestButtonState({
         text: 'Send',
         icon: <SendIcon />,
         color: 'primary',
@@ -190,10 +191,10 @@ export const RequestSender = (
 
     outerState.requestInFlight = true
 
-    setRequestSenderState((state) => ({ ...state, disabled: true }))
+    setRequestButtonState((state) => ({ ...state, disabled: true }))
     setTimeout(() => {
       if (outerState.requestInFlight) {
-        setRequestSenderState(({
+        setRequestButtonState(({
           text: 'Stop',
           icon: <StopCircleIcon />,
           color: 'warning',
@@ -206,17 +207,17 @@ export const RequestSender = (
     document.dispatchEvent(new Event(requestSentEventType))
 
     if (RcUtils.isExtensionRuntime()) {
-      console.log('<RequestSender />.sendClickCallback running as extension')
+      console.log('<RequestButton />.sendClickCallback running as extension')
       chrome.runtime.sendMessage(httpRequest, exchangeCompletionHandler);
     } else {
-      console.log('<RequestSender />.sendClickCallback not running as extension')
+      console.log('<RequestButton />.sendClickCallback not running as extension')
       const httpExchangeHandler = new HttpExchangeHandler(httpRequest)
       outerState.inFlightHttpExchangeHandler = httpExchangeHandler
       httpExchangeHandler.submitRequest(exchangeCompletionHandler)
     }
   }
 
-  const [requestSenderState, setRequestSenderState] = React.useState<RequestSenderButtonStateType>({
+  const [requestButtonState, setRequestButtonState] = React.useState<RequestButtonStateType>({
     text: 'Send',
     icon: <SendIcon />,
     color: 'primary',
@@ -233,14 +234,14 @@ export const RequestSender = (
     >
       <Button
         variant='contained'
-        disabled={requestSenderState.disabled}
-        color={requestSenderState.color}
+        disabled={requestButtonState.disabled}
+        color={requestButtonState.color}
         //size={RcUtils.defaultSize}
         // size='small'
-        endIcon={requestSenderState.icon}
-        onClick={requestSenderState.onClick}
+        endIcon={requestButtonState.icon}
+        onClick={requestButtonState.onClick}
       >
-        {requestSenderState.text}
+        {requestButtonState.text}
       </Button>
     </Stack>
   )

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { HttpExchange } from './type.http-exchange'
+import { HttpExchange } from './http-exchange'
 
 
 //maybe i should rename this to UiContext or AppUiContext

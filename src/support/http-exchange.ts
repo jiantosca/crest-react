@@ -1,4 +1,31 @@
-import { HttpExchange, HttpRequest, NameValuePair } from './type.http-exchange'
+export type NameValuePair = {
+    name: string
+    value: string
+}
+
+export type HttpRequest = {
+    id: string
+    method: string
+    url: string
+    headers: NameValuePair[]
+    body?: string
+}
+
+export type HttpResponse = {
+    statusCode: number
+    headers: NameValuePair[]
+    body?: string
+}
+
+export type HttpExchange = {
+    timedout: boolean
+    timeout?: number
+    aborted: boolean
+    startTime?: number
+    endTime?: number
+    request: HttpRequest
+    response: HttpResponse
+}
 
 export class HttpExchangeHandler {
 
@@ -22,10 +49,10 @@ export class HttpExchangeHandler {
         console.log('HttpExchangeHandler.sendRequest NO COOKIE handling yet.')
 
         const timeoutId = (this.timeout > 0) ? setTimeout(() => {
-                this.timedout = true
-                this.abortController.abort()
-            }, this.timeout) : undefined
-        
+            this.timedout = true
+            this.abortController.abort()
+        }, this.timeout) : undefined
+
         const headers = new Headers()
         this.httpRequest.headers.forEach(header => {
             headers.append(header.name, header.value)
@@ -77,7 +104,7 @@ export class HttpExchangeHandler {
             }) : []
 
         let statusCode: number = (response) ? response.status : 0
-        
+
         return {
             timedout: this.timedout,
             timeout: this.timeout,

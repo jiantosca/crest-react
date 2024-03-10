@@ -6,9 +6,9 @@ import {
 }
   from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
-import { useApplicationContext } from '../support/context'
+import { useApplicationContext } from '../support/react-contexts'
 import { RequestHeaderAutocomplete } from './RequestHeaderAutocomplete'
-import { RequestSender, requestSentEventType, requestCompleteEventType } from './RequestSender'
+import { RequestButton, requestSentEventType, requestCompleteEventType } from './RequestButton'
 import { FilterOptionsState } from '@mui/material'
 import { Storage } from "../support/storage"
 /**
@@ -55,7 +55,7 @@ export const RequestBuilder = () => {
         {!appContext.isDrawerOpen && <BurgerMenu />}
         <MethodDropDown methodValue={method} setMethodValue={setMethod} />
         <UrlAutoComplete urlRef={urlRef} />
-        <RequestSender method={method} urlRef={urlRef} headersRef={headersRef} bodyRef={bodyRef} />
+        <RequestButton method={method} urlRef={urlRef} headersRef={headersRef} bodyRef={bodyRef} />
         {/* 
           https://mui.com/material-ui/migration/v5-component-changes/#hidden 
           <body element> needs to hide when not post/put

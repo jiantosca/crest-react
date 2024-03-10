@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { useApplicationContext } from '../support/context';
+import { useApplicationContext } from '../support/react-contexts';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { HttpResponse, NameValuePair } from '../support/type.http-exchange';
+import { HttpResponse, NameValuePair } from '../support/http-exchange';
 import { darkModeCss, lightModeCss } from "../support/highlighter-styles";
 import { parse, stringify } from 'lossless-json';
 

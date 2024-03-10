@@ -15,7 +15,7 @@ import { Collapse, FormControlLabel, ListSubheader, Switch } from '@mui/material
 import { ExpandLess, ExpandMore, ManageHistory } from '@mui/icons-material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import { styled, useTheme } from '@mui/material/styles';
-import { useApplicationContext } from '../support/context';
+import { useApplicationContext } from '../support/react-contexts';
 import { RcUtils } from '../support/rest-client-utils';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
