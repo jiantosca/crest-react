@@ -17,7 +17,7 @@ export class Storage {
     static storeUrl(url: string): void {
         this.storeUrls([url]);
     }
-    
+
     static storeUrls(newUrls: string[]): void {
         const historyUrls = Storage.listUrls();
         Storage.mergeAndStore(Storage.urlHistoryKey, historyUrls, newUrls)
@@ -40,15 +40,15 @@ export class Storage {
     private static mergeAndStore(key: string, existing: string[], newItems: string[]): void {
         const beforeLength = existing.length;
 
-        newItems.forEach(newItem => { 
-            if(!existing.includes(newItem)) {
+        newItems.forEach(newItem => {
+            if (!existing.includes(newItem)) {
                 existing.push(newItem)
             }
         })
 
         existing.sort();
 
-        if(beforeLength !== existing.length) {
+        if (beforeLength !== existing.length) {
             console.log(`storing history for key ${key}`)
             localStorage.setItem(key, JSON.stringify(existing));
         } else {
@@ -107,7 +107,7 @@ export class Storage {
     //         }
     //     });
     // }
-    
+
     // static delete(key: string): Promise<void> {
     //     return new Promise((resolve, reject) => {
     //         if (chromeStorage) {
