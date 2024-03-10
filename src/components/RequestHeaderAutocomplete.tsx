@@ -1,8 +1,8 @@
 import { Autocomplete, TextField } from '@mui/material'
 import * as React from 'react'
-import { RcUtils } from '../support/RestClientUtils'
+import { RcUtils } from '../support/rest-client-utils'
 import { ChangeEvent } from 'react'
-import { Storage } from "../support/Storage";
+import { Storage } from "../support/storage";
 
 
 /**

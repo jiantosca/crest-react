@@ -6,7 +6,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { RequestBuilder } from './components/RequestBuilder'
-import { ApplicationContext, Application, HttpExchangeContext, HttpExchangeHolder } from './support/Context';
+import { ApplicationContext, Application, HttpExchangeContext, HttpExchangeHolder } from './support/context';
 import { AppDrawer } from './components/AppDrawer';
 import { HttpResponses } from './components/HttpResponses';
 import { DevNotes } from './components/DevNotes';

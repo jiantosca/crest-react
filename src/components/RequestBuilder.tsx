@@ -1,16 +1,16 @@
 import * as React from 'react'
-import { RcUtils } from '../support/RestClientUtils'
+import { RcUtils } from '../support/rest-client-utils'
 import {
   Paper, Stack, InputLabel, MenuItem, Select, FormControl,
   Autocomplete, TextField, IconButton, Box, LinearProgress
 }
   from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
-import { useApplicationContext } from '../support/Context'
+import { useApplicationContext } from '../support/context'
 import { RequestHeaderAutocomplete } from './RequestHeaderAutocomplete'
 import { RequestSender, requestSentEventType, requestCompleteEventType } from './RequestSender'
 import { FilterOptionsState } from '@mui/material'
-import { Storage } from "../support/Storage"
+import { Storage } from "../support/storage"
 /**
  * 
  * The RequestionBuilder is mostly composed of other components to help build http requests. Here's the

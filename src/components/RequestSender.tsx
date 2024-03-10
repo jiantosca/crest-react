@@ -1,10 +1,10 @@
 import React from 'react'
-import { Storage } from '../support/Storage'
+import { Storage } from '../support/storage'
 import SendIcon from '@mui/icons-material/Send'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
-import { RcUtils } from '../support/RestClientUtils'
+import { RcUtils } from '../support/rest-client-utils'
 import { HttpExchangeHandler } from '../support/http-exchange-handler'
-import { useApplicationContext, useHttpExchangeContext } from '../support/Context'
+import { useApplicationContext, useHttpExchangeContext } from '../support/context'
 import { HttpExchange, HttpRequest, NameValuePair } from '../support/type.http-exchange'
 import { Stack, Typography, Alert, Button } from '@mui/material'
 

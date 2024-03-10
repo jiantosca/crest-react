@@ -21,8 +21,6 @@ export class HttpExchangeHandler {
     submitRequest(completionHandler: (exchange: HttpExchange) => void): void {
         console.log('HttpExchangeHandler.sendRequest NO COOKIE handling yet.')
 
-        console.log(this.timeout)
-
         const timeoutId = (this.timeout > 0) ? setTimeout(() => {
                 this.timedout = true
                 this.abortController.abort()

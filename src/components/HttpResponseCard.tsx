@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ButtonGroup, Card, CardHeader, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Stack, Tooltip, Typography } from "@mui/material"
 import { HttpHighlighter } from "./HttpHighlighter";
-import { RcUtils } from '../support/RestClientUtils';
+import { RcUtils } from '../support/rest-client-utils';
 import { HttpExchange } from "../support/type.http-exchange"
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ReplayIcon from '@mui/icons-material/Replay';

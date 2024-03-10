@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { Dialog, DialogTitle, DialogContent, IconButton, Paper } from '@mui/material';
-import { useApplicationContext } from '../support/Context'
+import { useApplicationContext } from '../support/context'
 import CloseIcon from '@mui/icons-material/Close';
-import { RcUtils } from '../support/RestClientUtils';
+import { RcUtils } from '../support/rest-client-utils';
 
 /**
  * Holds some state we want for the dialog, also used as the detail attribute of the CustomEvent
