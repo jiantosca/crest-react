@@ -1,162 +1,107 @@
 import * as React from 'react'
 import { RcUtils } from '../support/RestClientUtils'
 import {
-  Paper, Stack, InputLabel, MenuItem,Select, FormControl,
-  Autocomplete, TextField, IconButton, Box, Typography, Alert } 
+  Paper, Stack, InputLabel, MenuItem, Select, FormControl,
+  Autocomplete, TextField, IconButton, Box, LinearProgress
+}
   from '@mui/material'
-import SendIcon from '@mui/icons-material/Send'
 import MenuIcon from '@mui/icons-material/Menu'
-import { useApplicationContext, useHttpExchangeContext } from '../support/Context'
-import { LoadingButton } from '@mui/lab'
-import { Storage } from '../support/Storage'
-import { HttpExchange, HttpRequest, NameValuePair } from '../support/type.http-exchange'
-import { HttpExchangeHandler } from '../support/http-exchange-handler'
+import { useApplicationContext } from '../support/Context'
 import { RequestHeaderAutocomplete } from './RequestHeaderAutocomplete'
-
+import { RequestSender, requestSentEventType, requestCompleteEventType } from './RequestSender'
+import { FilterOptionsState } from '@mui/material'
+import { Storage } from "../support/Storage"
 /**
  * 
- * The RequestionBuilder is mostly composed of other components to help build http requests. In order
- * of how they show up in the UI, they are:
+ * The RequestionBuilder is mostly composed of other components to help build http requests. Here's the
+ * components:
  * 
  * 1. BurgerMenu - a hamburger menu icon that when clicked toggles the drawer open/closed.
  * 2. MethodDropDown - a dropdown to select the http method (GET, POST, PUT, DELETE, etc).
  * 3. UrlAutoComplete - an autocomplete component for the url input.
- * 4. SendButton - a button to send the http request.
- * 5. RequestHeaderAutocomplete - an autocomplete component for the headers input. This is the only 
- *    component imported from it's own file since it's not so simple.
+ * 4. RequestSender - a button to send the http request as well as the code to trigger the
+ *    response handling.
+ * 5. RequestHeaderAutocomplete - an autocomplete component for the headers input.
  * 6. BodyInput - a text area for the body input.
+ * 7. ProgressBar - a progress bar that shows when a request is sent and hides when the response is received.
  * 
- * A few other things to note:
- *   - The RequestBuilder centralizes all the data needed to submit request through the use of various
- *     state vars, and refs that it passes down to the child components.
- *   - The RequestBuilder also centralizes the logic to submit the request through the use of a callback
- *     method that it passes down to the SendButton component.
- *   - The RequestBuilder also has logic deal with responses through the use of a callback sent to the
- *     HttpExchangeHandler.submitRequest method. When a successful response is received, the RequestBuilder
- *     store the url and headers in storage for auto complete suggestions. Then it will set the httpExchangeHolder
- *     through the use of the useHttpExchangeContext custom hook which triggers rendering of the HttpResponses
- *     that will include the new response in the UI. More details on  how this works in the HttpResponses component.
+ * RequestSender and RequestHeaderAutocomplete comps are in different files due to their complexity, but 
+ * the rest of the components are in this file.
  */
 export const RequestBuilder = () => {
   const renderCounter = React.useRef(0)
   renderCounter.current++
   console.log(`<RequestBuilder /> rendered ${renderCounter.current} times`)
 
-  //method realated stuff for body display which shows/hides body input
-  //if method is post/put, and method. The method state is example of 
-  //property lifting. The method state is lifted up to the parent component.
-  //and passed to child <MethodDropDown/> comp.
   const [bodyDisplay, setBodyDisplay] = React.useState<string>('none')
   const [method, setMethod] = React.useState<string>('GET')
   React.useEffect(() => {
     ['POST', 'PUT'].includes(method) ? setBodyDisplay('') : setBodyDisplay('none')
   }, [method])
 
-  //use ref this time since no need to rerender this comp when url changes
-  const urlRef = React.useRef<string>('http://localhost:8080/crest-api/test?mock=json.json')
+  const urlRef = React.useRef<string>('http://localhost:8080/crest-api/test?mock=json.json&sleep=3000')
   const headersRef = React.useRef<string>('')
   const bodyRef = React.useRef<string>('')
 
   const appContext = useApplicationContext()
-  const {setHttpExchangeHolder} = useHttpExchangeContext()
-
-  const sendClickCallback = async (event: React.MouseEvent<HTMLButtonElement>) => {
-
-    const headerLines = headersRef.current.trim().split('\n')
-        .filter(header => header.trim() !== '')
-
-    const problems: string[] = []
-
-    if(urlRef.current.trim() === '' || !urlRef.current.startsWith('http')) {
-      problems.push('Enter a valid URL that starts with http or https')
-    }
-
-    const headerNameValues: NameValuePair[] = (headerLines.length > 0) ?
-      headerLines.map(header => {
-        const [name, ...value] = header.split(':');
-        if(value.length === 0) {
-          problems.push(`"${name}" doesn't appear to be a valid header`)
-        }
-        return {name: name, value: value.join(':').trim()} as NameValuePair
-      }) : []
-
-    if(problems.length > 0) {
-      //simple list...
-      // const problemListItems = problems.map(problem => <ListItem><ListItemText>{problem}</ListItemText></ListItem>)
-      // appContext.showDialog('Request Issues', <List dense>{problemListItems}</List>)
-      const problemListItems = problems.map(problem => <Alert severity="error"><Typography>{problem}</Typography></Alert>)
-      appContext.showDialog('Invalid Request', <Stack sx={{ width: '100%', pt: 1 }} spacing={2}>{problemListItems}</Stack>)
-      return
-    }
-    const guid = RcUtils.generateGUID()
-
-    const httpRequest: HttpRequest = {
-      id: guid,
-      method: method,
-      url: urlRef.current,
-      headers: headerNameValues,
-      body: (bodyRef.current.trim()) ? bodyRef.current.trim() : undefined
-    }
-
-    const httpExchangeCallback = (httpExchange: HttpExchange) => {
-      console.log(httpExchange)
-      if(!RcUtils.isExtensionRuntime()) {
-        httpExchange.response.headers.push({name: 'headers-suppressed', value: 'because not running as extension (see fetch & Access-Control-Expose-Headers)'})
-      }
-      if(httpExchange.response.statusCode === 0) {
-        appContext.showDialog('Network Error', 
-          <Alert severity="error">
-            {/* component='div' so each typography is on a new line */}
-            <Typography component="div">No response from the server. Ensure your URL is correct.</Typography>
-            {httpExchange.request.url.startsWith('https') && <Typography component="div" pt={1}>This could also be due to SSL issues. You could add an exception in chrome if appropriate.</Typography>}
-          </Alert>)
-
-          return //return so we don't paint a response with a 0 status code
-      }
-
-      if(httpExchange.response.statusCode < 300) {
-        Storage.storeUrl(httpRequest.url)
-        Storage.storeHeaders(headerLines)
-      }
-      setHttpExchangeHolder({value: httpExchange});
-    }
-    
-    if(RcUtils.isExtensionRuntime()) {
-      console.log('RequestBuilder.sendClickCallback running as extension')
-      chrome.runtime.sendMessage(httpRequest, httpExchangeCallback);
-    } else {
-      console.log('RequestBuilder.sendClickCallback not running as extension')
-      new HttpExchangeHandler(httpRequest).submitRequest(httpExchangeCallback)
-    }
-  }
 
   return (
     <Paper
       elevation={RcUtils.defaultElevation}
       //4 seems to be default radius, hate to manually set here but need to remove top radius.
-      sx={{ borderRadius: '0px 0px 4px 4px', padding: '20px', margin: '0px 20px 20px 20px' }}
+      sx={{ borderRadius: '0px 0px 4px 4px', padding: '20px 20px 0px 20px', margin: '0px 20px 20px 20px' }}
     >
       <Stack direction='row' spacing={1.5}>
         {!appContext.isDrawerOpen && <BurgerMenu />}
         <MethodDropDown methodValue={method} setMethodValue={setMethod} />
         <UrlAutoComplete urlRef={urlRef} />
-        <SendButton sendClickCallback={sendClickCallback} />
+        <RequestSender method={method} urlRef={urlRef} headersRef={headersRef} bodyRef={bodyRef} />
         {/* 
           https://mui.com/material-ui/migration/v5-component-changes/#hidden 
           <body element> needs to hide when not post/put
         */}
       </Stack>
       <Stack direction='column' spacing={1.5} marginTop={2}>
-        <RequestHeaderAutocomplete headersRef={headersRef}/>
+        <RequestHeaderAutocomplete headersRef={headersRef} />
       </Stack>
       <Stack direction='column' spacing={1.5} marginTop={2}
         sx={{ display: bodyDisplay }}
       >
-        <BodyInput bodyRef={bodyRef}/>
+        <BodyInput bodyRef={bodyRef} />
+
       </Stack>
+      <ProgressBar />
     </Paper>
   )
 }
+
+const ProgressBar = () => {
+  const renderCounter = React.useRef(0)
+  console.log(`<ProgressBar> rendered ${++renderCounter.current} times`)
+
+  const [visible, setVisible] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    const progressBarEventHandle = (event: Event) => {
+      console.log(`<ProgressBar> event received: ${event.type}`)
+      const visible = event.type === requestSentEventType ? true : false
+      setVisible(visible)
+    }
+    document.addEventListener(requestSentEventType, progressBarEventHandle)
+    document.addEventListener(requestCompleteEventType, progressBarEventHandle)
+
+    return () => {
+      document.removeEventListener(requestSentEventType, progressBarEventHandle)
+      document.removeEventListener(requestCompleteEventType, progressBarEventHandle)
+    }
+  }, [])
+
+  return visible ? <Box sx={{ padding: '15px 0px 10px 0px' }}><LinearProgress color='primary' /></Box> : <Box pt={'20px'}></Box>
+  // return (
+  //   <LinearProgress color="primary" />
+  // )
+}
+
 const BurgerMenu = () => {
   const renderCounter = React.useRef(0)
   console.log(`<BurgerMenu /> rendered ${++renderCounter.current} times`)
@@ -207,69 +152,53 @@ const MethodDropDown = ({ methodValue, setMethodValue }: { methodValue: string, 
   )
 }
 
-const UrlAutoComplete = ({urlRef} : {urlRef: React.MutableRefObject<string>}) => {
+const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<string> }) => {
   const renderCounter = React.useRef(0)
   console.log(`<UrlAutoComplete /> rendered ${++renderCounter.current} times`)
+
+  const filterUrlOptions = (options: string[], state: FilterOptionsState<string>): string[] => {
+    const trimmedInputValue = state.inputValue.trim()
+
+    //need at least a few chars before we start suggesting stuff...
+    if (trimmedInputValue.length < 3) {
+      return [];
+    }
+
+    const tokens = trimmedInputValue.split(' ')
+    const suggestions = [] as string[]
+
+    // Return up to 100 suggestions when all tokens much be in the url, and the url doesn't 
+    // match the current input value. URL history can get big and we don't want to be redering
+    // crazy amounts of suggestions.
+    Storage.listUrls().some((url) => {
+      if (tokens.every(token => url.includes(token)) &&
+        trimmedInputValue !== url) {
+        suggestions.push(url)
+      }
+      return suggestions.length === 100
+    })
+
+    return suggestions
+  }
 
   return (
     <Autocomplete
       size={RcUtils.defaultSize}
       fullWidth
       autoHighlight
+      clearIcon={null}
       renderInput={(props) => <TextField {...props} variant={RcUtils.defaultVariant} label='URL' />}
       value={urlRef.current}
       onChange={(event: any, newUrl: string | null) => urlRef.current = newUrl || ''}
       onInputChange={(event: any, newUrl: string | null) => urlRef.current = newUrl || ''}
       options={[]} //never suggest options by default, only when typeing starts
-      filterOptions={RcUtils.filterUrlOptions}
+      filterOptions={filterUrlOptions}
       freeSolo
     />
   )
 }
 
-const SendButton = ({ sendClickCallback }: any) => {
-  const renderCounter = React.useRef(0)
-  console.log(`<SendButton /> rendered ${++renderCounter.current} times`)
-  const [sending, setSending] = React.useState<boolean>(false)
-  const handleClick = () => {
-    setSending(true);
-    setTimeout(() => {
-      setSending(false);
-      sendClickCallback();
-    }, 700);
-  }
-  return (
-    //how i figure out alignment via flex https://www.youtube.com/watch?v=sKeW8r_mDS0
-    <Stack direction='row'
-      sx={{ display: 'flex', border: 0 }}
-      justifyContent='flex-end'
-      alignItems='flex-end'
-    >
-      {/* <Button
-        variant='contained'
-        color='primary'
-        //size={RcUtils.defaultSize}
-        size='small'
-        endIcon={<SendIcon />}
-        onClick={sendClickCallback}
-      >
-        Send
-      </Button> */}
-      <LoadingButton
-        size="small"
-        onClick={handleClick}
-        endIcon={<SendIcon />}
-        loading={sending}
-        loadingPosition="end"
-        variant="contained"
-      >
-        <span>Send</span>
-      </LoadingButton>
-    </Stack>
-  )
-}
-
-const BodyInput = ({bodyRef} : {bodyRef: React.MutableRefObject<string>}) => {
+const BodyInput = ({ bodyRef }: { bodyRef: React.MutableRefObject<string> }) => {
   const renderCounter = React.useRef(0)
   console.log(`<BodyInput /> rendered ${++renderCounter.current} times`)
 
@@ -277,7 +206,7 @@ const BodyInput = ({bodyRef} : {bodyRef: React.MutableRefObject<string>}) => {
     <TextField
       id="standard-multiline-flexible"
       label="Body"
-      onChange={(event) => bodyRef.current = event.target.value }
+      onChange={(event) => bodyRef.current = event.target.value}
       multiline
       maxRows={15}
       minRows={5}

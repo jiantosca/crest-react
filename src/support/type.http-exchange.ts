@@ -1,8 +1,3 @@
-/**
- * maybe I should create more granular types for the request and response objects and then use those
- * types in the HttpExchange type. I'm not sure if I'll ever need to do that though.
- */
-
 export type NameValuePair = {
   name: string
   value: string
@@ -24,6 +19,7 @@ export type HttpResponse = {
 
 export type HttpExchange = {
   timedout: boolean
+  timeout?: number
   aborted: boolean
   startTime?: number
   endTime?: number

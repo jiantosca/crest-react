@@ -13,8 +13,6 @@ export const HttpHighlighter = (
     const renderCounter = React.useRef(0)
     console.log(`<HttpHighlighter /> rendered ${++renderCounter.current} times`)
 
-    
-    
     let body = prettyPrint(httpResponse.body || '', httpResponse.headers)
 
     let headersAndBody: string =
@@ -40,8 +38,8 @@ export const HttpHighlighter = (
     )
 }
 
-const jsonMediaReg = /[\/|+]json/
-const xmlMediaReg = /[\/|+]xml/
+const jsonMediaReg = /[/|+]json/
+const xmlMediaReg = /[/|+]xml/
 
 function prettyPrint(body: string, headers: NameValuePair[]): string {
 
@@ -140,10 +138,13 @@ function formatXml(xml: string) {
         }
         // ---
 
-        if (fromTo == 'opening->closing')
-            formatted = formatted.substr(0, formatted.length - 1) + ln + '\n'; // substr removes line break (\n) from prev loop
-        else
+        if (fromTo === 'opening->closing') {
+            // JPI original code used deprecated substr so I changed to substring
+            //formatted = formatted.substr(0, formatted.length - 1) + ln + '\n'; // substr removes line break (\n) from prev loop
+            formatted = formatted.substring(0, formatted.length - 1) + ln + '\n'
+        } else {
             formatted += padding + ln + '\n';
+        }
     }
 
     return formatted;

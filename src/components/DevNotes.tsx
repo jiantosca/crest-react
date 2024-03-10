@@ -1,24 +1,17 @@
-import { Box, List, ListItem, Paper } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react'
 
 export const DevNotes = () => {
-    const items = ["Item 1", "Item 2", "Item 3"];
-
     return (
         <Box sx={{ pl: '40px', maxWidth: '80%', filter: 'brightness(80%)' }}>
             <b>TODOs</b>
             <ul>
-                <li>Fix global noOption style in App.css but should really put that in component</li>
                 <li>Maybe i should have a "main wrapper" where request building and responses all go in then i can control margins across the board?</li>
+                <li>prismjs 1.22.0 was last version that didn't have the formatting bug when body with xml or json has with mime type params. No formatting when they do.</li>
                 <li>
                     <b>Fetch related stuff</b>
                     <ul>
-                        <li>progress bar</li>
-                        <li>Abort button</li>
-                        <li>URI history setting in storage</li>
-                        <li>Header history in storage</li>
                         <li>OAuth support</li>
-                        <li>popup message when error happens. I think when response code is 0</li>
                     </ul>
                 </li>
                 <li>
@@ -32,7 +25,7 @@ export const DevNotes = () => {
                     <b>Request Builder</b>
                     <ul>
                         <li>URI autosuggest limit results to ??</li>
-                        <li>Header autosuggest - maybe useAutoComplete hook? https://mui.com/material-ui/react-autocomplete/#useautocomplete</li>
+                        
                     </ul>
                 </li>
                 <li>
@@ -60,15 +53,19 @@ export const DevNotes = () => {
                     </ul>
                 </li>
             </ul>
-            
             <b>1.0</b>
             <ul>
-                <li>intial setup and support</li>
+                <li>UX</li>
+                <li>progress bar</li>
+                <li>Stop/Abort button</li>
+                <li>URI history setting in storage</li>
+                <li>Header history in storage</li>
+                <li>OAuth support</li>
+                <li>Errow dialog for validation/http errors</li>
+                <li>Header autosuggest</li>
+                <li>URI autocomplete - prevent suggestion of existing input value</li>
             </ul>
             <b>0.1</b>
-            <ul>
-                <li>Rollback prismjs to 1.22.0. latest has bug formatting body with xml or json with mime type params</li>
-            </ul>
         </Box>
     )
 }

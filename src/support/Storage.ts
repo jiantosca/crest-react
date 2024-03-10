@@ -1,4 +1,4 @@
-const chromeStorage = (chrome.storage) ? true : false;
+//const chromeStorage = (chrome.storage) ? true : false;
 
 /**
  * this class is cable of storing data chrome.storage.local when available, otherwise

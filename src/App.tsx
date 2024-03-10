@@ -10,7 +10,7 @@ import { ApplicationContext, Application, HttpExchangeContext, HttpExchangeHolde
 import { AppDrawer } from './components/AppDrawer';
 import { HttpResponses } from './components/HttpResponses';
 import { DevNotes } from './components/DevNotes';
-import { AppDialog, AppDialogStateType, closedAppDialogState, appDialogEventType } from './components/AppDialog';
+import { AppDialog, AppDialogStateType, closedAppDialogState, appDialogEventName } from './components/AppDialog';
 
 const devMode = window.location.href.includes('installType=development') || window.location.href.startsWith('http');
 
@@ -67,12 +67,12 @@ function App() {
         title: title,
         content: content
       }
-      const event = new CustomEvent(appDialogEventType, {detail: dialogState});
+      const event = new CustomEvent(appDialogEventName, {detail: dialogState});
       document.dispatchEvent(event);
       console.log('showDialog')
     }, 
     hideDialog: () => {
-      const event = new CustomEvent(appDialogEventType, {detail: closedAppDialogState});
+      const event = new CustomEvent(appDialogEventName, {detail: closedAppDialogState});
       document.dispatchEvent(event);
       console.log('closeDialog')
     }

@@ -17,7 +17,6 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import { styled, useTheme } from '@mui/material/styles';
 import { useApplicationContext } from '../support/Context';
 import { RcUtils } from '../support/RestClientUtils';
-import PublishIcon from '@mui/icons-material/Publish';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
     display: 'flex',

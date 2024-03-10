@@ -12,12 +12,12 @@
  * will be propertly imported. If no import, then this file will be directly in the build dir. 
  * this call matter cause it changes how you specifty the path of this file in the manifest.json.
  */
-import {HttpExchangeHandler} from '../src/support/http-exchange-handler.js'
+import { HttpExchangeHandler } from '../src/support/http-exchange-handler.js'
 
 function getExtUrl(ext: chrome.management.ExtensionInfo) {
-	console.log({ chrome })
-	console.log(location)
-	console.log(location.host)
+	console.log('getExtUrl with ext:', ext)
+	console.log('getExtUrl with chrome:', chrome)
+
 	let theUrl = 'chrome-extension://' + location.host + '/index.html';
 
 	if (ext.installType === 'development') {
@@ -27,35 +27,58 @@ function getExtUrl(ext: chrome.management.ExtensionInfo) {
 	return theUrl;
 }
 //active tab is whatever tab is active when you click Rest Client. could be web page or whatever.
-chrome.action.onClicked.addListener( (activeTab) => {
+chrome.action.onClicked.addListener((activeTab) => {
 	chrome.management.get(chrome.runtime.id, (ext) => {
-		console.log('chrome.management.get new')
-		console.log('chrome.management.get new')
-		console.log('chrome.management.get new')
-		console.log('chrome.management.get new')
 		chrome.tabs.create({
 			url: getExtUrl(ext)
 		}
-		);
-	});
-});
+		)
+	})
+})
+
 
 /**
- * request - the message sent by the sender, HttpRequest in my case. 
+ * The activeExchangeHandlers map help us keep track of inflight requests so we can abort them if the user 
+ * clicks the stop button. It's highly unlikely that there would be more than one in here at a time, but
+ * it's possible if users have multiple tabs of the extension open and are sending requests from each tab 
+ * at the same time. For this reason we use a map.
+ */
+let activeExchangeHandlers = new Map<string, HttpExchangeHandler>();
+
+/**
+ * This is the main message handler for the extension. It takes care of submitting http requests and constructed
+ * by the user in the <RequestBuilder /> component. It also handles aborting requests if the user clicks the stop.
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-	console.log('chrome.runtime.onMessage.addListener')
-	console.log(request)
-	console.log(sender)
-	console.log(sendResponse)
-	const exchangeHandler = new HttpExchangeHandler(request)
-	exchangeHandler.submitRequest((exchange) => {
-		console.log('******* chrome.runtime.onMessage.addListener completionHandler sending response back to sender')
-		console.log(exchange)
-		sendResponse(exchange)
-	});
-	return true;//ensures comm ports remain open so sendResponse works after this method returns.
+	console.log('chrome.runtime.onMessage.addListener request:', request)
+	console.log(`background.tx.onMessage has ${activeExchangeHandlers.size} activeExchangeHandlers:`, activeExchangeHandlers)
+	if (request.url) {
+		console.log('background.tx.onMessage handling new http request')
+		const exchangeHandler = new HttpExchangeHandler(request)
+		activeExchangeHandlers.set(request.id, exchangeHandler)
+		exchangeHandler.submitRequest((exchange) => {
+			activeExchangeHandlers.delete(request.id)
+			console.log('background.tx.onMessage completionHandler sending HttpExchange back: ', exchange)
+			sendResponse(exchange)
+		})
+
+		//return true to ensure comm ports remain open so sendResponse works after this method returns.
+		return true
+
+	} else if (request.abortId) {
+		console.log(`background.tx.onMessage handling abort request for id: ${request.abortId}`)
+		const exchangeHandler = activeExchangeHandlers.get(request.abortId)
+		if (exchangeHandler) {
+			exchangeHandler.abort()
+			activeExchangeHandlers.delete(request.abortId)
+		}
+	} else {
+		console.error('background.tx.onMessage received a message it doesn\'t know how to handle. request object:', request)
+	}
+
+
+
 
 });
 
-export { } //make it a module so ts doesn't complain about no exports
+export { } //make it a module so eslint doesn't complain about no exports
