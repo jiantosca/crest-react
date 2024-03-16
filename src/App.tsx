@@ -11,6 +11,7 @@ import { AppDrawer } from './components/AppDrawer';
 import { HttpResponses } from './components/HttpResponses';
 import { DevNotes } from './components/DevNotes';
 import { AppDialog, AppDialogStateType, closedAppDialogState, appDialogEventName } from './components/AppDialog';
+import { setupTestData } from './support/temp-data-setup';
 
 const devMode = window.location.href.includes('installType=development') || window.location.href.startsWith('http');
 
@@ -92,6 +93,7 @@ function App() {
 
   React.useEffect(()=> {
     console.log('<App /> - init stuff goes in here when needed.')
+    setupTestData()
   }, [])
 
   return (

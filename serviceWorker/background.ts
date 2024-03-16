@@ -12,7 +12,7 @@
  * will be propertly imported. If no import, then this file will be directly in the build dir. 
  * this call matter cause it changes how you specifty the path of this file in the manifest.json.
  */
-import { HttpExchangeHandler } from '../src/support/http-exchange-handler.js'
+import { HttpExchangeHandler } from '../src/support/http-exchange.js'
 
 function getExtUrl(ext: chrome.management.ExtensionInfo) {
 	console.log('getExtUrl with ext:', ext)
@@ -51,14 +51,14 @@ let activeExchangeHandlers = new Map<string, HttpExchangeHandler>();
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	console.log('chrome.runtime.onMessage.addListener request:', request)
-	console.log(`background.tx.onMessage has ${activeExchangeHandlers.size} activeExchangeHandlers:`, activeExchangeHandlers)
+	console.log(`background.ts.onMessage has ${activeExchangeHandlers.size} activeExchangeHandlers:`, activeExchangeHandlers)
 	if (request.url) {
-		console.log('background.tx.onMessage handling new http request')
+		console.log('background.ts.onMessage handling new http request')
 		const exchangeHandler = new HttpExchangeHandler(request)
 		activeExchangeHandlers.set(request.id, exchangeHandler)
-		exchangeHandler.submitRequest((exchange) => {
+		exchangeHandler.submitRequest().then((exchange) => {
 			activeExchangeHandlers.delete(request.id)
-			console.log('background.tx.onMessage completionHandler sending HttpExchange back: ', exchange)
+			console.log('background.ts.onMessage completionHandler sending HttpExchange back: ', exchange)
 			sendResponse(exchange)
 		})
 
@@ -66,7 +66,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		return true
 
 	} else if (request.abortId) {
-		console.log(`background.tx.onMessage handling abort request for id: ${request.abortId}`)
+		console.log(`background.ts.onMessage handling abort request for id: ${request.abortId}`)
 		const exchangeHandler = activeExchangeHandlers.get(request.abortId)
 		if (exchangeHandler) {
 			exchangeHandler.abort()

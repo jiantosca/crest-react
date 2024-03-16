@@ -66,7 +66,10 @@ export const RequestHeaderAutocomplete = ({ headersRef }: { headersRef: React.Mu
 
         const existingHeaders = lines.map((line: string) => line.toLowerCase())
 
-        const stringSuggestions = Storage.listHeaders().filter((header) => { 
+        //combine he header history with the oauth history to get a list of possible suggestions
+        const possibleSuggestions = [...Storage.listHeaders(), ...Storage.listOAuths().map(oauth => `crest-oauth: ${oauth.id}`)]
+        
+        const stringSuggestions = possibleSuggestions.filter((header) => { 
             const lcHeader = header.toLowerCase()
             return !existingHeaders.includes(lcHeader) && 
                 tokens.every(token => header.toLowerCase().includes(token.toLowerCase()))

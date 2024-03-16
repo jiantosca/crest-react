@@ -7,14 +7,15 @@ import { HttpExchangeHandler } from '../support/http-exchange'
 import { useApplicationContext, useHttpExchangeContext } from '../support/react-contexts'
 import { HttpExchange, HttpRequest, NameValuePair } from '../support/http-exchange'
 import { Stack, Typography, Alert, Button } from '@mui/material'
+import { HeaderHelper } from '../support/header-helper'
 
 
 export const requestSentEventType = 'requestSentEvent'
 export const requestCompleteEventType = 'requestCompleteEvent'
 
 /**
- * I'm guessing this "outer" state (outside the component) var is a hack but for now it works. Managing the state for what I want 
- * to do with the send button was getting confusing and this works. Basically when the user clicks the button to submit a request
+ * I'm guessing this "outer" state (outside the component) var is kind of a hack but for now it works. Managing the state for what I 
+ * want  to do with the send button was getting confusing with react. Basically when the user clicks the button to submit a request
  * it should first be disabled, and if the request is taking longer than a second then it turns into a stop button, and finally 
  * once the request is finished it goes back to original send button. So basically 3 steps...
  * 
@@ -22,15 +23,24 @@ export const requestCompleteEventType = 'requestCompleteEvent'
  *    on click.
  * 
  * 2. If the request is taking more than one second then the button should change to a stop button. This is handled via setTimeout
- *    function. The function checks outerState.requestInFlight, and if the request is still in flight then we'll give user the stop
- *    button via setRequestButtonState.
+ *    function (after 1 second). The function checks outerState.requestInFlight, and if the request is still in flight then we'll 
+ *    give user the stop button via setRequestButtonState. Now the user has the option to stop the request. Clicking it will invoke 
+ *    the abortRequest function which will either call the background service worker to stop the requestion (when running as an extension) 
+ *    or it will use the outsState inFlightHttpExchangeHandler and inFlightHeaderHeaper vars to stop the request. inFlightHeaderHeaper 
+ *    might be doing oauth calls we need to stop, and inFlightHttpExchangeHandler is the main request we need to stop.
  * 
  * 3. Finally the exchangeCompletionHandler executes using setRequestButtonState to put it back to a send button.
  */
 const outerState = {
   requestInFlight: false as boolean,
-  // below only set when not running as extension since ext does everything in service worker
-  inFlightHttpExchangeHandler: undefined as HttpExchangeHandler | undefined
+  inFlightHeaderHeaper: undefined as HeaderHelper | undefined,
+  inFlightHttpExchangeHandler: undefined as HttpExchangeHandler | undefined,
+
+  reset: () => {
+    outerState.requestInFlight = false
+    outerState.inFlightHeaderHeaper = undefined
+    outerState.inFlightHttpExchangeHandler = undefined
+  }
 }
 
 /**
@@ -76,7 +86,7 @@ export const RequestButton = (
   }) => {
 
   const renderCounter = React.useRef(0)
-  // note this comp will render twice when someone updates the method in the parent RequestBuilder come. Once
+  // note this comp will render twice when someone updates the method in the parent RequestBuilder. Once
   // because the method state changes, and again because parent comp has a useEffect that changes the bodyDisplay 
   // state based on the method state. No biggie, just noting it.
   console.log(`<RequestButton /> rendered ${++renderCounter.current} times`)
@@ -84,40 +94,12 @@ export const RequestButton = (
   const { setHttpExchangeHolder } = useHttpExchangeContext()
   const appContext = useApplicationContext()
 
-  const sendClickCallback = (event?: React.MouseEvent<HTMLButtonElement>) => {
-
-    const headerLines = headersRef.current.trim().split('\n')
-      .filter(header => header.trim() !== '')
-
-    const problems: string[] = []
-
-    if (urlRef.current.trim() === '' || !urlRef.current.startsWith('http')) {
-      problems.push('Enter a valid URL that starts with http or https')
-    }
-
-    const headerNameValues: NameValuePair[] = (headerLines.length > 0) ?
-      headerLines.map(header => {
-        const [name, ...value] = header.split(':');
-        if (value.length === 0) {
-          problems.push(`"${name}" doesn't appear to be a valid header`)
-        }
-        return { name: name, value: value.join(':').trim() } as NameValuePair
-      }) : []
-
-    if (problems.length > 0) {
-      const problemListItems = problems.map(problem => <Alert severity="error"><Typography>{problem}</Typography></Alert>)
-      appContext.showDialog('Invalid Request', <Stack sx={{ width: '100%', pt: 1 }} spacing={2}>{problemListItems}</Stack>)
-      return
-    }
-    const guid = RcUtils.generateGUID()
-
-    const httpRequest: HttpRequest = {
-      id: guid,
-      method: method,
-      url: urlRef.current,
-      headers: headerNameValues,
-      body: (bodyRef.current.trim()) ? bodyRef.current.trim() : undefined
-    }
+  /**
+   * This is the main function that is called when the user clicks the send button. It will first setup a couple
+   * call back functions used to abort requests, and handled completed requests (aka responses :). Then it has code
+   * to submit the request which uses the afrormentioned call back functions.
+   */
+  const sendClickCallback = async (event?: React.MouseEvent<HTMLButtonElement>) => {
 
     /**
      * Call back to abort the request when the user clicks the stop button. When a request 
@@ -130,10 +112,19 @@ export const RequestButton = (
       if (RcUtils.isExtensionRuntime()) {
         chrome.runtime.sendMessage({ abortId: guid })
       } else {
+        //header helper can have an in flight http request to get the token
+        outerState.inFlightHeaderHeaper?.getHttpExchangeHandler()?.abort()
+        //this is the main request
         outerState.inFlightHttpExchangeHandler?.abort()
       }
     }
+    // end abortRequest
 
+    const resetUI = () => {
+      document.dispatchEvent(new Event(requestCompleteEventType))
+      outerState.reset()
+      setRequestButtonState(sendRequestButtonState)
+    }
     /**
      * Call back to handle the response. This is called when the response is received.
      * 
@@ -143,18 +134,7 @@ export const RequestButton = (
     const exchangeCompletionHandler = (httpExchange: HttpExchange) => {
       console.log('<RequestButton />.exchangeCompletionHandler', httpExchange)
 
-      document.dispatchEvent(new Event(requestCompleteEventType))
-
-      outerState.requestInFlight = false
-      outerState.inFlightHttpExchangeHandler = undefined
-
-      setRequestButtonState({
-        text: 'Send',
-        icon: <SendIcon />,
-        color: 'primary',
-        disabled: false,
-        onClick: sendClickCallback
-      })
+      resetUI()
 
       if (!RcUtils.isExtensionRuntime()) {
         httpExchange.response.headers.push({ name: 'headers-suppressed', value: 'because not running as extension (see fetch & Access-Control-Expose-Headers)' })
@@ -188,10 +168,40 @@ export const RequestButton = (
       // so we can render responses via setting the httpExchangeHolder holder below.
       setHttpExchangeHolder({ value: httpExchange })
     }
+    // end exchangeCompletionHandler
+
+    /**
+     * now that we have some callbacks, let's validate the input and send the request. 
+     */ 
+
+    const headerLines = headersRef.current.trim().split('\n')
+      .filter(header => header.trim() !== '')
+
+    const problems: string[] = []
+
+    if (urlRef.current.trim() === '' || !urlRef.current.startsWith('http')) {
+      problems.push('Enter a valid URL that starts with http or https')
+    }
+
+    const headerNameValues: NameValuePair[] = (headerLines.length > 0) ?
+      headerLines.map(header => {
+        const [name, ...value] = header.split(':');
+        if (value.length === 0) {
+          problems.push(`"${name}" doesn't appear to be a valid header`)
+        }
+        return { name: name, value: value.join(':').trim() } as NameValuePair
+      }) : []
+
+    if (problems.length > 0) {
+      const problemListItems = problems.map(problem => <Alert severity="error"><Typography>{problem}</Typography></Alert>)
+      appContext.showDialog('Invalid Request', <Stack sx={{ width: '100%', pt: 1 }} spacing={2}>{problemListItems}</Stack>)
+      return
+    }
 
     outerState.requestInFlight = true
+    setRequestButtonState({ ...sendRequestButtonState, disabled: true })
+    document.dispatchEvent(new Event(requestSentEventType))//progress bar listens for this
 
-    setRequestButtonState((state) => ({ ...state, disabled: true }))
     setTimeout(() => {
       if (outerState.requestInFlight) {
         setRequestButtonState(({
@@ -204,7 +214,31 @@ export const RequestButton = (
       }
     }, 1000);
 
-    document.dispatchEvent(new Event(requestSentEventType))
+    // guid really used for stopping requests when running as an extension. Header helper is using the same 
+    // guid as the main http request since in case of header with oauth, this could result in it's own http
+    // request to fetch the token and we want to be ablle to stop that too if the user clicks the stop button.
+    const guid = RcUtils.generateGUID()
+    
+    const headerHelper = new HeaderHelper(headerNameValues, guid, appContext.showDialog)
+    outerState.inFlightHeaderHeaper = headerHelper
+    let resolvedHeaders;
+    try {
+      resolvedHeaders = await headerHelper.resolveHeaders()
+    } catch (error) {
+      console.log('Header helper was either aborted, or if there was a real issue it should have already triggered ' +
+        'a dialog for the user to review the issue. Error: ', error)
+      resetUI()
+      return;
+    }
+
+    const httpRequest: HttpRequest = {
+      id: guid,
+      method: methodRef.current,
+      url: urlRef.current,
+      headers: resolvedHeaders,
+      body: (['POST', 'PUT'].includes(method) && bodyRef.current.trim()) ? 
+        bodyRef.current.trim() : undefined
+    }
 
     if (RcUtils.isExtensionRuntime()) {
       console.log('<RequestButton />.sendClickCallback running as extension')
@@ -213,17 +247,27 @@ export const RequestButton = (
       console.log('<RequestButton />.sendClickCallback not running as extension')
       const httpExchangeHandler = new HttpExchangeHandler(httpRequest)
       outerState.inFlightHttpExchangeHandler = httpExchangeHandler
-      httpExchangeHandler.submitRequest(exchangeCompletionHandler)
+      httpExchangeHandler.submitRequest().then(exchangeCompletionHandler)
     }
   }
 
-  const [requestButtonState, setRequestButtonState] = React.useState<RequestButtonStateType>({
+  const sendRequestButtonState: RequestButtonStateType = {
     text: 'Send',
     icon: <SendIcon />,
     color: 'primary',
     disabled: false,
     onClick: sendClickCallback,
-  })
+  }
+
+  // before i wasn't using a ref for method, but when constructing the httpRequest object in the sendClickCallback somehow the method
+  // value was presuably closured and stuck on default value of GET. So i'm using a ref to get around that. I need to better undersand
+  // this. It seems like when this comp rerenders with the latest method value, the sendClickCallback should have the latest value
+  // too, but it doesn't.. gotta use the ref.
+  const methodRef = React.useRef<string>(method)
+  methodRef.current = method
+
+  const [requestButtonState, setRequestButtonState] = React.useState<RequestButtonStateType>(sendRequestButtonState)
+
 
   return (
     //how i figure out alignment via flex https://www.youtube.com/watch?v=sKeW8r_mDS0

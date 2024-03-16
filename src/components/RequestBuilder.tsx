@@ -39,7 +39,7 @@ export const RequestBuilder = () => {
     ['POST', 'PUT'].includes(method) ? setBodyDisplay('') : setBodyDisplay('none')
   }, [method])
 
-  const urlRef = React.useRef<string>('http://localhost:8080/crest-api/test?mock=json.json&sleep=3000')
+  const urlRef = React.useRef<string>('http://localhost:8080/crest-api/test?mock=json.json&sleep=1000')
   const headersRef = React.useRef<string>('')
   const bodyRef = React.useRef<string>('')
 

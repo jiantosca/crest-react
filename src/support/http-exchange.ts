@@ -45,7 +45,10 @@ export class HttpExchangeHandler {
         this.timeout = (timeout) ? timeout : this.timeout
     }
 
-    submitRequest(completionHandler: (exchange: HttpExchange) => void): void {
+    /**
+     * @deprecated see submitRequest
+     */
+    private _submitRequest(completionHandler: (exchange: HttpExchange) => void): void {
         console.log('HttpExchangeHandler.sendRequest NO COOKIE handling yet.')
 
         const timeoutId = (this.timeout > 0) ? setTimeout(() => {
@@ -85,7 +88,26 @@ export class HttpExchangeHandler {
         });
     }
 
+    /**
+     * I originally wrote submitRequest(callback), and then realized i'll need a promise I can await on in some cases (oauth).
+     * So for now just renamed original call back to _submitRequest and added this submitRequest method belowthat returns a 
+     * promise.
+     * 
+     * The returned promise will ALWAYS return an HttpExchange object no matter what, so client code need only implement the
+     * '.then()' method and not worry about catching errors.
+     */
+    submitRequest(): Promise<HttpExchange> {
+        console.log('HttpExchangeHandler.submitRequest(): Promise<HttpExchange>')
+
+        return new Promise<HttpExchange>((resolve, reject) => {
+           this._submitRequest((httpExchange) => {
+               resolve(httpExchange)
+           })
+        });
+    }
+
     abort() {
+        console.log(`HttpExchangeHandler.abort() for url ${this.httpRequest.url}` )
         this.aborted = true
         this.abortController.abort()
     }
@@ -109,8 +131,8 @@ export class HttpExchangeHandler {
             timedout: this.timedout,
             timeout: this.timeout,
             aborted: this.aborted,
-            startTime: this.startTime,
-            endTime: this.endTime,
+            startTime: this.startTime, //TODO not set/used yet
+            endTime: this.endTime, //TODO not set/used yet
             request: this.httpRequest,
             response: {
                 statusCode: statusCode,

@@ -6,12 +6,13 @@ export const DevNotes = () => {
         <Box sx={{ pl: '40px', maxWidth: '80%', filter: 'brightness(80%)' }}>
             <b>TODOs</b>
             <ul>
+                <li>Rename Storage.tsx to something else since Storage is an existing interface https://developer.mozilla.org/en-US/docs/Web/API/Storage</li>
                 <li>Maybe i should have a "main wrapper" where request building and responses all go in then i can control margins across the board?</li>
                 <li>prismjs 1.22.0 was last version that didn't have the formatting bug when body with xml or json has with mime type params. No formatting when they do.</li>
                 <li>
                     <b>Fetch related stuff</b>
                     <ul>
-                        <li>OAuth support</li>
+                        <li>More OAuth testing</li>
                     </ul>
                 </li>
                 <li>

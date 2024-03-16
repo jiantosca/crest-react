@@ -1,5 +1,7 @@
 //const chromeStorage = (chrome.storage) ? true : false;
 
+import { HttpRequest } from "./http-exchange"
+
 /**
  * this class is cable of storing data chrome.storage.local when available, otherwise
  * it will use localStorage. This is handy when running the code as an extension
@@ -8,10 +10,11 @@
 export class Storage {
     static urlHistoryKey: string = 'urlHistory'
     static headerHistoryKey: string = 'headerHistory'
+    static oauthKey: string = 'oauth'
 
     static listUrls(): string[] {
-        const urls = localStorage.getItem(Storage.urlHistoryKey);
-        return urls ? JSON.parse(urls) : [];
+        const urls = localStorage.getItem(Storage.urlHistoryKey)
+        return urls ? JSON.parse(urls) : []
     }
 
     static storeUrl(url: string): void {
@@ -24,15 +27,31 @@ export class Storage {
     }
 
     static listHeaders(): string[] {
-        const headers = localStorage.getItem(Storage.headerHistoryKey);
+        const headers = localStorage.getItem(Storage.headerHistoryKey)
         return headers ? JSON.parse(headers) : [];
     }
 
     static storeHeaders(newHeaders: string[]): void {
-        const historyHeaders = Storage.listHeaders();
+        const historyHeaders = Storage.listHeaders()
         Storage.mergeAndStore(Storage.headerHistoryKey, historyHeaders, newHeaders)
     }
 
+    static getOAuth(id: string): HttpRequest | undefined {
+        const oauths = Storage.listOAuths()
+        return oauths.find(oauth => oauth.id === id)
+    }
+
+    static listOAuths(): HttpRequest[] {
+        const oauths = localStorage.getItem(Storage.oauthKey)
+        return oauths ? JSON.parse(oauths) : []
+    }
+    
+    static storeOAuths(oauths: HttpRequest[]): void {
+        localStorage.setItem(Storage.oauthKey, JSON.stringify(oauths));
+    }
+    static clearAll(): void {
+        localStorage.clear();
+    }
     /**
      * Merge values from the new items into the existing and return a boolean indicating if 
      * the existing array was changed.
@@ -50,7 +69,7 @@ export class Storage {
 
         if (beforeLength !== existing.length) {
             console.log(`storing history for key ${key}`)
-            localStorage.setItem(key, JSON.stringify(existing));
+            localStorage.setItem(key, JSON.stringify(existing))
         } else {
             console.log(`not storing history for key ${key}`)
         }
