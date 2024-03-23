@@ -27,6 +27,16 @@ export type HttpExchange = {
     response: HttpResponse
 }
 
+/**
+ * An request bundle something we can save so let's give it a name And it can also represent a partial request so we're making all
+ * required fields of the HttpRequest optional via Parital. Someone might want to create an HttpRequestBundle just for headers
+ * for quick entery into the request builder's header input. Or someone might want to save a fully formed request. This type
+ * lets us handle any of those cases.
+ */
+export type HttpRequestBundle = Partial<HttpRequest> & {
+    name: string
+}
+
 export class HttpExchangeHandler {
 
     timedout: boolean = false

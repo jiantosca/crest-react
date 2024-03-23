@@ -2,7 +2,7 @@ import { Autocomplete, TextField } from '@mui/material'
 import * as React from 'react'
 import { RcUtils } from '../support/rest-client-utils'
 import { ChangeEvent } from 'react'
-import { Storage } from "../support/storage";
+import { Storage } from "../support/storage"
 
 
 /**
@@ -43,7 +43,7 @@ type HeadeOptionType = {
     suggested: string;
     value: string;
 }
-export const RequestHeaderAutocomplete = ({ headersRef }: { headersRef: React.MutableRefObject<string> }) => {
+export const RequestHeaderAutocomplete = ({ headersRef }: { headersRef: React.MutableRefObject<string>}) => {
     const renderCounter = React.useRef(0)
     console.log(`<HeadersInput /> rendered ${++renderCounter.current} times`)
 
@@ -106,7 +106,7 @@ export const RequestHeaderAutocomplete = ({ headersRef }: { headersRef: React.Mu
         //console.log(`onInput ${event.target.selectionStart}:${event.target.selectionEnd}>` + event.target.value.substring(selectionEnd, event.target.value.length) + '<')
 
     }
-            
+
     return (
         <Autocomplete
             size={RcUtils.defaultSize}
@@ -133,6 +133,9 @@ export const RequestHeaderAutocomplete = ({ headersRef }: { headersRef: React.Mu
                     headersRef.current = selected.value
                 }
             }}
+            //adding HeadeOptionType here for bundle load.  
+            value={{suggested: "initial", value: headersRef.current}}
+            //defaultValue={headersRef.current}
             clearIcon={null}
             selectOnFocus={false}
             options={[]} //never suggest options by default, only when typing starts

@@ -93,7 +93,7 @@ function App() {
 
   React.useEffect(()=> {
     console.log('<App /> - init stuff goes in here when needed.')
-    setupTestData()
+    // setupTestData()
   }, [])
 
   return (

@@ -8,7 +8,7 @@ import { useApplicationContext, useHttpExchangeContext } from '../support/react-
 import { HttpExchange, HttpRequest, NameValuePair } from '../support/http-exchange'
 import { Stack, Typography, Alert, Button } from '@mui/material'
 import { HeaderHelper } from '../support/header-helper'
-
+import { handleCrestRequest } from '../support/crest-endpoints'
 
 export const requestSentEventType = 'requestSentEvent'
 export const requestCompleteEventType = 'requestCompleteEvent'
@@ -78,8 +78,8 @@ type RequestButtonStateType = {
  *    More details on how this works in the HttpResponses component.
  */
 export const RequestButton = (
-  { method, urlRef, headersRef, bodyRef }: {
-    method: string,
+  { methodRef, urlRef, headersRef, bodyRef }: {
+    methodRef: React.MutableRefObject<string>,
     urlRef: React.MutableRefObject<string>,
     headersRef: React.MutableRefObject<string>,
     bodyRef: React.MutableRefObject<string>
@@ -125,6 +125,7 @@ export const RequestButton = (
       outerState.reset()
       setRequestButtonState(sendRequestButtonState)
     }
+
     /**
      * Call back to handle the response. This is called when the response is received.
      * 
@@ -173,23 +174,24 @@ export const RequestButton = (
     /**
      * now that we have some callbacks, let's validate the input and send the request. 
      */ 
+    const problems: string[] = []
+
+    if (!urlRef.current.startsWith('http://') &&
+        !urlRef.current.startsWith('https://') && 
+        !urlRef.current.startsWith('crest://')) {
+      problems.push('Enter a valid URL that starts with http:// or https://')
+    }
 
     const headerLines = headersRef.current.trim().split('\n')
       .filter(header => header.trim() !== '')
 
-    const problems: string[] = []
-
-    if (urlRef.current.trim() === '' || !urlRef.current.startsWith('http')) {
-      problems.push('Enter a valid URL that starts with http or https')
-    }
-
     const headerNameValues: NameValuePair[] = (headerLines.length > 0) ?
       headerLines.map(header => {
-        const [name, ...value] = header.split(':');
-        if (value.length === 0) {
-          problems.push(`"${name}" doesn't appear to be a valid header`)
+        const nameValue = RcUtils.parseHeaderLine(header)
+        if( !nameValue.name || !nameValue.value) {
+          problems.push(`Invalid header '${header}'`)
         }
-        return { name: name, value: value.join(':').trim() } as NameValuePair
+        return nameValue
       }) : []
 
     if (problems.length > 0) {
@@ -236,8 +238,14 @@ export const RequestButton = (
       method: methodRef.current,
       url: urlRef.current,
       headers: resolvedHeaders,
-      body: (['POST', 'PUT'].includes(method) && bodyRef.current.trim()) ? 
+      body: (['POST', 'PUT'].includes(methodRef.current) && bodyRef.current.trim()) ? 
         bodyRef.current.trim() : undefined
+    }
+    
+    if(urlRef.current.startsWith('crest://')) {
+      const exchange = handleCrestRequest(httpRequest)
+      exchangeCompletionHandler(exchange)
+      return
     }
 
     if (RcUtils.isExtensionRuntime()) {
@@ -258,13 +266,6 @@ export const RequestButton = (
     disabled: false,
     onClick: sendClickCallback,
   }
-
-  // before i wasn't using a ref for method, but when constructing the httpRequest object in the sendClickCallback somehow the method
-  // value was presuably closured and stuck on default value of GET. So i'm using a ref to get around that. I need to better undersand
-  // this. It seems like when this comp rerenders with the latest method value, the sendClickCallback should have the latest value
-  // too, but it doesn't.. gotta use the ref.
-  const methodRef = React.useRef<string>(method)
-  methodRef.current = method
 
   const [requestButtonState, setRequestButtonState] = React.useState<RequestButtonStateType>(sendRequestButtonState)
 

@@ -1,4 +1,5 @@
 import { OverridableStringUnion } from "@mui/types";
+import { NameValuePair } from "./http-exchange";
 export class RcUtils {
 
   static defaultVariant: 'standard' | 'outlined' | 'filled' | undefined = 'standard' //'filled', 'outlined', 'standard'
@@ -26,5 +27,10 @@ export class RcUtils {
         v = c === 'x' ? r : ((r & 0x3) | 0x8);
       return v.toString(16);
     });
+  }
+
+  static parseHeaderLine(headerLine: string): NameValuePair {
+    const [name, ...value] = headerLine.split(':')
+    return { name: name, value: value.join(':').trim() } as NameValuePair
   }
 }

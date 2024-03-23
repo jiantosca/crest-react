@@ -115,7 +115,7 @@ export class HeaderHelper {
                }
             }
 
-            //this id generated to be use to stop the request if needed.
+            //use this.requestId so we can stop it if needed when running as ext. 
             const httpRequestWithId = { ...httpRequest, id: this.requestId }
 
             if (RcUtils.isExtensionRuntime()) {
