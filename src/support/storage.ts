@@ -1,6 +1,7 @@
 //const chromeStorage = (chrome.storage) ? true : false;
 
 import { HttpRequest, HttpRequestBundle } from "./http-exchange"
+import { SettingsType } from "./settings"
 
 /**
  * this class is cable of storing data chrome.storage.local when available, otherwise
@@ -14,6 +15,7 @@ export class Storage {
         //requestHistory: 'requestHistory', TODO
         oauths: 'oauths', 
         bundles: 'bundles',
+        settings: 'settings',
         listKeys: () => {
             const keys: string[] = Object.values(Storage.Keys).filter(
                 value => typeof value === 'string') as string[]
@@ -34,7 +36,7 @@ export class Storage {
     }
 
     static storeUrls(newUrls: string[]): void {
-        newUrls = newUrls.filter(url => !url.startsWith('crest'))
+        newUrls = newUrls.filter(url => url.startsWith('http://') || url.startsWith('https://'))
         if(newUrls.length < 1) {
             return;
         }
@@ -82,6 +84,15 @@ export class Storage {
 
     static storeBundles(bundles: HttpRequestBundle[]): void {
         localStorage.setItem(Storage.Keys.bundles, JSON.stringify(bundles));
+    }
+
+    static getSettings(): SettingsType | null {
+        const settings = localStorage.getItem(Storage.Keys.settings);
+        return settings ? JSON.parse(settings) : null;
+    }
+
+    static storeSettings(settings: SettingsType): void {
+        localStorage.setItem(Storage.Keys.settings, JSON.stringify(settings));
     }
 
     /**

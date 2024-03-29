@@ -282,7 +282,7 @@ export const RequestButton = (
         disabled={requestButtonState.disabled}
         color={requestButtonState.color}
         //size={RcUtils.defaultSize}
-        // size='small'
+        size='small'
         endIcon={requestButtonState.icon}
         onClick={requestButtonState.onClick}
       >

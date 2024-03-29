@@ -8,14 +8,18 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { RequestBuilder } from './components/RequestBuilder'
 import { ApplicationContext, Application, HttpExchangeContext, HttpExchangeHolder } from './support/react-contexts';
 import { AppDrawer } from './components/AppDrawer';
+// import { AppDrawer } from './components/AppDrawer2';
+//import { AppDrawer } from './components/AppDrawerOrig';
+
 import { HttpResponses } from './components/HttpResponses';
 import { DevNotes } from './components/DevNotes';
 import { AppDialog, AppDialogStateType, closedAppDialogState, appDialogEventName } from './components/AppDialog';
-import { setupTestData } from './support/temp-data-setup';
+//import { setupTestData } from './support/temp-data-setup';
+import { AppSettings } from './support/settings';
 
 const devMode = window.location.href.includes('installType=development') || window.location.href.startsWith('http');
 
-const drawerWidth = 260
+const drawerWidth = 300
 const Main = styled('main', { shouldForwardProp: (prop) => { return prop !== 'open' } })<{
   open?: boolean;
 }>(({ theme, open }) => ({
@@ -50,15 +54,15 @@ function App() {
   const [httpExchangeHolder, setHttpExchangeHolder] = React.useState<HttpExchangeHolder>({value:undefined})
   
   const [appState, setAppState] = React.useState<Application>({
-    isDrawerOpen: false,
-    isDarkMode: true,//pull from local storage or just stick with 
+    isDrawerOpen: AppSettings.isDrawerOpen(),
+    isDarkMode: AppSettings.isDarkMode(),
     drawerWidth: drawerWidth,
     toggleDrawer: () => {
-      appState.isDrawerOpen = !appState.isDrawerOpen
+      appState.isDrawerOpen = AppSettings.toggleDrawer()
       setAppState({ ...appState })
     },
     toggleDarkMode: () => {
-      appState.isDarkMode = !appState.isDarkMode
+      appState.isDarkMode = AppSettings.toggleDarkMode()
       setAppState({ ...appState })
     },
     showDialog: (title: string, content: React.ReactElement) => {
@@ -80,6 +84,9 @@ function App() {
   });
 
   const appTheme = createTheme({
+    typography: {
+      fontSize: 13.25, // default is 14
+    },    
     palette: {
       mode: appState.isDarkMode ? 'dark' : 'light',
     },
@@ -91,7 +98,7 @@ function App() {
     }
   });
 
-  React.useEffect(()=> {
+  React.useEffect(() => {
     console.log('<App /> - init stuff goes in here when needed.')
     // setupTestData()
   }, [])
@@ -110,7 +117,7 @@ function App() {
                 <RequestBuilder />
                 <HttpResponses />
               </HttpExchangeContext.Provider>
-              {devMode && <DevNotes />}
+              {/* {devMode && <DevNotes />} */}
           </Main>
           <AppDialog />
         </ApplicationContext.Provider>

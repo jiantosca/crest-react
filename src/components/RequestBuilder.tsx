@@ -77,7 +77,8 @@ export const RequestBuilder = () => {
   React.useEffect(() => {
     const bundleLoader: EventListener = (event) => {
 
-      //only make unique on bundle load event!
+      // only make unique on bundle load event, this'll force new comp creation instead of rerender needed for auto completes
+      // and even body input so helper text moves out of the way.
       urlKeyRef.current = `urlKey-${RcUtils.generateGUID()}`
       headerKeyRef.current = `headerKey-${RcUtils.generateGUID()}`
       bodyKeyRef.current = `bodyKey-${RcUtils.generateGUID()}`
@@ -90,6 +91,9 @@ export const RequestBuilder = () => {
       //now we need to set the method and ensure we rerender. If the bundle has a different method than the current value then we'll get
       //a rerender by setting method state, otherise we use the forcedRender state var to cause a rerender.
       const theMethod = bundle.method || 'GET'
+
+      window.scrollTo(0, 0)
+      
       if(theMethod !== method) {
         setMethod(theMethod)
       } else {

@@ -4,8 +4,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { HttpResponse, NameValuePair } from '../support/http-exchange';
 import { darkModeCss, lightModeCss } from "../support/highlighter-styles";
 import { parse, stringify } from 'lossless-json';
-
-
+import { AppSettings } from '../support/settings';
 
 export const HttpHighlighter = (
     { httpResponse, wordWrap }: { httpResponse: HttpResponse, wordWrap: boolean }) => {
@@ -24,12 +23,18 @@ export const HttpHighlighter = (
         headersAndBody += body;
     }
 
+    // when false we never show line numbers or highlight the response. Both of inject tons of stuff into the dom
+    // making some thing sluggish
+    const highlight = httpResponse.contentLength < AppSettings.getPrettyPrintBytesLimit()
+
+
     const drawerState = useApplicationContext()
+
     return (
         <SyntaxHighlighter
-            language='http'
+            language={(highlight) ? 'http': 'none'}
             style={drawerState.isDarkMode ? darkModeCss(wordWrap) : lightModeCss(wordWrap)}
-            showLineNumbers={!wordWrap}
+            showLineNumbers={highlight && !wordWrap}
             wrapLongLines={wordWrap}
         >
             {/* https://www.dhiwise.com/post/crafting-beautiful-code-blocks-with-react-syntax-highlighter */}

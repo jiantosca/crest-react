@@ -15,12 +15,13 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloseIcon from '@mui/icons-material/Close';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import { AppSettings } from '../support/settings';
 
 export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpExchange, deleteCallBack: (id: string) => void }) => {
     const renderCounter = React.useRef(0)
     console.log(`<HttpResponseCard /> rendered ${++renderCounter.current} times`)
 
-    const [wordWrap, setWordWrap] = React.useState<boolean>(false)//need to pull initial value from local storage.
+    const [wordWrap, setWordWrap] = React.useState<boolean>(AppSettings.isWordWrap())
     const toggleWordWrap = () => {
         setWordWrap(!wordWrap)
     }

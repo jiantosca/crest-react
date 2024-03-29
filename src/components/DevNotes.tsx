@@ -6,9 +6,11 @@ export const DevNotes = () => {
         <Box sx={{ pl: '40px', maxWidth: '80%', filter: 'brightness(80%)' }}>
             <b>TODOs</b>
             <ul>
+                <li>for saved requests use date sub list</li>
+                <li>Had to use a div in AppDrawer ListItemText for history to show the ellipsis on overflow, maybe url autocomplete needs the same?</li>
                 <li>need to ensure we always have a content length, sometimes server don't return one.</li>
                 <li>rename storage to persistence.</li>
-                <li>Change oauths to use HttpRequestBundle with  name instead of HttpRequest with only id? Or maybe optional name on HttpRequest and remove bundle? I dunno</li>
+                <li>Change oauths to use HttpRequestBundle with name instead of HttpRequest with only id? Or maybe optional name on HttpRequest and remove bundle? I dunno</li>
                 <li>when importing from legacy crest, headers (and urls) prefixed with crest* should be excluded since mui doesn't like when two autosuggests have the same value. they can overlap when header exists in history, and oauth bundle with same name exists.</li>
                 <li>consigs non persistent headers, timeouts. Maybe one timeout which includes time for oauth (and header processing) plus real http req. So when calling for real http req, timeout should be timeout - header helper time </li>
                 <li>Line numbers not right alighted in some cases like when hitting crest resources or when running as web app instead of ext. In both cases, headers are limited so maybe something to do with that.</li>

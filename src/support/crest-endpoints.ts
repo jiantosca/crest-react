@@ -177,6 +177,11 @@ const fromLegacyStorage = (legacyStorage: any): any => {
                 })
                 newStorage['oauths'] = oauths
                 break;
+            case 'settings':
+                // we're effectively ignoring the legacy settings since new ext will do some things differently
+                // and have some sesnible defaults.
+                newStorage['legacySettings'] = JSON.parse(item.value)
+                break;
             default:
                 newStorage[item.key] = JSON.parse(item.value)
         }
@@ -212,6 +217,7 @@ const createExchange = (httpRequest: HttpRequest, body: string | null, headers?:
         request: httpRequest,
         response: {
             statusCode: (statusCode) ? statusCode : 200,
+            contentLength: (body) ? body.length : 0,
             //need to ensure new instance of headers since other code can modify it
             headers: headers ? [...headers] : [...jsonContent],
             body: (body) ? body : ''
