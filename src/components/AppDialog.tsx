@@ -60,6 +60,7 @@ export const AppDialog = () => {
     // based on this...
     // https://mui.com/material-ui/react-dialog/#customization
     <Dialog
+      maxWidth='xl'
       open={appDialogState.isOpen}
       onClose={appContext.hideDialog}
       PaperComponent={(props) => {

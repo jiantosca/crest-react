@@ -9,38 +9,41 @@ import { HttpRequest, HttpRequestBundle } from '../support/http-exchange';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import { useApplicationContext } from '../support/react-contexts';
+import { RequestEditor } from './RequestEditor';
 
 const toolTipEnterDelay = 500
 
-const toToolTipTitle = (bundleOrRequest: HttpRequest | HttpRequestBundle, buttons: React.ReactNode[]): React.ReactNode => {
+const toToolTipTitle = (bundle: HttpRequestBundle, buttons: React.ReactNode[]): React.ReactNode => {
+    const formattedDate = (bundle.timestamp) ? new Date(bundle.timestamp)
+            .toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true}) : ''
+    
+    const headers = (bundle.headers && bundle.headers.length > 0) ? (<Box pt={1}>{
+        bundle.headers.map((header, index) => (<Box key={index}>{header.name}: {header.value}</Box>))
+    }</Box>) : undefined
 
-        const formattedDate = (bundleOrRequest.timestamp) ? new Date(bundleOrRequest.timestamp)
-                .toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: true}) : ''
-        
-        const headers = (bundleOrRequest.headers && bundleOrRequest.headers.length > 0) ? 
-            bundleOrRequest.headers.map(header => (<><br/>{header.name}: {header.value}</>)) : [<></>]
-        return (
-            <Stack direction='column' sx={{ maxWidth: 'none', overflowY: 'auto', maxHeight: 250 }}>
-                <Stack direction='row' sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ whiteSpace: 'nowrap' }}>{formattedDate}</Box>
-                    <Box>{buttons}</Box>
-                </Stack>
-                
-                <Box>{bundleOrRequest.method} {bundleOrRequest.url}</Box>
-                {headers && headers}
-                {bundleOrRequest.body && <><br/><br/>{bundleOrRequest.body}</>}
+    return (
+        <Stack direction='column' sx={{ maxWidth: 'none', overflowY: 'auto', maxHeight: 250 }}>
+            <Stack direction='row' sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ whiteSpace: 'nowrap' }}>{formattedDate}</Box>
+                <Box>{buttons}</Box>
             </Stack>
-        )
+            <Box pt={1}>{bundle.method} {bundle.url}</Box>
+            {headers && headers} 
+            {bundle.body && <Box pt={1}>{bundle.body}</Box>}
+        </Stack>
+    )
 }
-
 export const AppDrawerTabs = () => {
+    const renderCounter = React.useRef(0)
+    console.log(`<AppDrawerTabs /> rendered ${++renderCounter.current} times`)
 
     const [tabValue, setTabValue] = React.useState(0)
     const handleTabChange = (event: React.SyntheticEvent, newTabValue: number) => {
@@ -69,9 +72,20 @@ export const AppDrawerTabs = () => {
 }
 
 const HistoryTabContent = () => {
+    const renderCounter = React.useRef(0)
+    console.log(`<HistoryTabContent /> rendered ${++renderCounter.current} times`)
 
-    const buttons = 
-    console.log('HistoryTabContent')
+    const appContext = useApplicationContext()
+
+    const handleSave = (httpRequest: HttpRequest) => {
+        const bundle = {
+            name: httpRequest.id,
+            ...httpRequest
+        }
+
+        appContext.showDialog('Save Request', <RequestEditor bundle={bundle} />)
+    }
+
     return (
         <List>
             {/* <List subheader={
@@ -80,12 +94,13 @@ const HistoryTabContent = () => {
 
             {
                 Storage.listRequestHistory().map((request, index) => (
-                    <Tooltip placement='right' enterDelay={toolTipEnterDelay} leaveDelay={0}
-                        title={toToolTipTitle(request, [
-                            <IconButton size='small' onClick={() => alert('save!')}><SaveIcon/></IconButton>, 
-                            <IconButton size='small' onClick={() => alert('delete!')}><DeleteForeverIcon color='warning'/></IconButton>])
+                    <Tooltip key={`toolTip-${index}`} placement='right' enterDelay={toolTipEnterDelay} leaveDelay={0}
+                        title={toToolTipTitle({name: `ID ${request.id}`, ...request}, [
+                            <IconButton key={`save-${index}`} size='small' onClick={() => handleSave(request)}><SaveIcon/></IconButton>, 
+                            <IconButton key={`delete-${index}`} size='small' onClick={() => alert('delete!')}><DeleteForeverIcon color='warning'/></IconButton>])
                         }>
-                        <ListItemButton key={index} onClick={() => {
+
+                        <ListItemButton onClick={() => {
                             document.dispatchEvent(new CustomEvent(loadBundleEventType, { detail: request }))
                         }}>
                             <ListItemText primary={<Typography sx={{
@@ -104,14 +119,17 @@ const HistoryTabContent = () => {
 }
 
 const BundlesTabContent = () => {
+    const renderCounter = React.useRef(0)
+    console.log(`<BundlesTabContent /> rendered ${++renderCounter.current} times`)
+
     return (
         <List>
             {
                 Storage.listBundles().map((bundle, index) => (
-                    <Tooltip placement='right' enterDelay={toolTipEnterDelay} leaveDelay={0}
+                    <Tooltip key={`toolTip-${index}`} placement='right' enterDelay={toolTipEnterDelay} leaveDelay={0}
                         title={toToolTipTitle(bundle, [
-                            <IconButton size='small' onClick={() => alert('edit!')}><EditIcon/></IconButton>, 
-                            <IconButton size='small' onClick={() => alert('delete!')}><DeleteForeverIcon color='warning'/></IconButton>])
+                            <IconButton key={`edit-${index}`} size='small' onClick={() => alert('edit!')}><EditIcon/></IconButton>, 
+                            <IconButton key={`delete-${index}`} size='small' onClick={() => alert('delete!')}><DeleteForeverIcon color='warning'/></IconButton>])
                     }>
 
                     <ListItemButton key={index} onClick={() => {
@@ -130,14 +148,17 @@ const BundlesTabContent = () => {
 }
 
 const OAuthTabContent = () => {
+    const renderCounter = React.useRef(0)
+    console.log(`<OAuthTabContent /> rendered ${++renderCounter.current} times`)
+
     return (
         <List>
             {
                 Storage.listOAuths().map((oauth, index) => (
-                    <Tooltip placement='right' enterDelay={toolTipEnterDelay} leaveDelay={0}
-                        title={toToolTipTitle(oauth, [
-                            <IconButton size='small' onClick={() => alert('edit!')}><EditIcon/></IconButton>, 
-                            <IconButton size='small' onClick={() => alert('delete!')}><DeleteForeverIcon color='warning'/></IconButton>])
+                    <Tooltip key={`toolTip-${index}`} placement='right' enterDelay={toolTipEnterDelay} leaveDelay={0}
+                        title={toToolTipTitle({name: oauth.id, ...oauth}, [
+                            <IconButton key={`edit-${index}`} size='small' onClick={() => alert('edit!')}><EditIcon/></IconButton>, 
+                            <IconButton key={`delete-${index}`} size='small' onClick={() => alert('delete!')}><DeleteForeverIcon color='warning'/></IconButton>])
                         }>
                         <ListItemButton key={index} onClick={() => {
                             document.dispatchEvent(new CustomEvent(loadBundleEventType, { detail: oauth }))
