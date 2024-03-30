@@ -33,12 +33,12 @@ export const requestCompleteEventType = 'requestCompleteEvent'
  */
 const outerState = {
   requestInFlight: false as boolean,
-  inFlightHeaderHeaper: undefined as HeaderHelper | undefined,
+  inFlightHeaderHelper: undefined as HeaderHelper | undefined,
   inFlightHttpExchangeHandler: undefined as HttpExchangeHandler | undefined,
 
   reset: () => {
     outerState.requestInFlight = false
-    outerState.inFlightHeaderHeaper = undefined
+    outerState.inFlightHeaderHelper = undefined
     outerState.inFlightHttpExchangeHandler = undefined
   }
 }
@@ -113,7 +113,7 @@ export const RequestButton = (
         chrome.runtime.sendMessage({ abortId: guid })
       } else {
         //header helper can have an in flight http request to get the token
-        outerState.inFlightHeaderHeaper?.getHttpExchangeHandler()?.abort()
+        outerState.inFlightHeaderHelper?.getHttpExchangeHandler()?.abort()
         //this is the main request
         outerState.inFlightHttpExchangeHandler?.abort()
       }
@@ -134,7 +134,7 @@ export const RequestButton = (
      */
     const exchangeCompletionHandler = (httpExchange: HttpExchange) => {
       console.log('<RequestButton />.exchangeCompletionHandler', httpExchange)
-
+      const unresolvedHeaders = outerState.inFlightHeaderHelper?.getUnresolvedHeaders()
       resetUI()
 
       if (!RcUtils.isExtensionRuntime()) {
@@ -163,6 +163,10 @@ export const RequestButton = (
       if (httpExchange.response.statusCode < 300) {
         Storage.storeUrl(httpRequest.url)
         Storage.storeHeaders(headerLines)
+        Storage.updateRequestHistory({
+          ...httpRequest,
+          headers: unresolvedHeaders ? unresolvedHeaders : []
+        })
       }
       // below causes rerender in the parent RequestBuilder because it's inside of the HttpExchangeContext.Provider (App.tsx)
       // but no biggie. main thing is we need this comp, and the HttpResponses inside of the HttpExchangeContext.Provider
@@ -222,7 +226,7 @@ export const RequestButton = (
     const guid = RcUtils.generateGUID()
     
     const headerHelper = new HeaderHelper(headerNameValues, guid, appContext.showDialog)
-    outerState.inFlightHeaderHeaper = headerHelper
+    outerState.inFlightHeaderHelper = headerHelper
     let resolvedHeaders;
     try {
       resolvedHeaders = await headerHelper.resolveHeaders()
@@ -235,6 +239,7 @@ export const RequestButton = (
 
     const httpRequest: HttpRequest = {
       id: guid,
+      timestamp: new Date().getTime(),
       method: methodRef.current,
       url: urlRef.current,
       headers: resolvedHeaders,

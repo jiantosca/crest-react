@@ -169,6 +169,7 @@ const fromLegacyStorage = (legacyStorage: any): any => {
                 const oauths: HttpRequest[] = legacyOAuths.map((legacyOauth: any) => {
                     return {
                         id: legacyOauth.name,
+                        timestamp: new Date().getTime(),
                         method: legacyOauth.method,
                         url: legacyOauth.url,
                         headers: (legacyOauth.headers as string[]).map(header => RcUtils.parseHeaderLine(header)),

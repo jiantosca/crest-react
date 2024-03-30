@@ -26,7 +26,7 @@ export class AppSettings {
         if (settings === null) {
             settings = {
                 serviceTimeout: 30000,
-                historyLimit: 100,
+                historyLimit: 50,
                 isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
                 isDrawerOpen: false,
                 response: {

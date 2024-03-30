@@ -44,7 +44,7 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
   
     //const appContext = useApplicationContext()
   
-    const onBundleSupporedChange = (event: React.SyntheticEvent, newUrl: string | null) => {
+    const onChange = (event: React.SyntheticEvent, newUrl: string | null) => {
       if(!event) {
         return
       }
@@ -86,12 +86,12 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
         size={RcUtils.defaultSize}
         fullWidth
         autoHighlight
-        //clearIcon={null}
+        clearIcon={null}
         renderOption={renderOption}
         renderInput={(props) => <TextField {...props} variant={RcUtils.defaultVariant} label='URL' />}
         value={urlRef.current}
-        onChange={onBundleSupporedChange}
-        onInputChange={onBundleSupporedChange}
+        onChange={onChange}
+        onInputChange={onChange}
         options={[]} //never suggest options by default, only when typeing starts
         filterOptions={filterUrlOptions}
         freeSolo

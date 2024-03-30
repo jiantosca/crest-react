@@ -5,6 +5,7 @@ export type NameValuePair = {
 
 export type HttpRequest = {
     id: string
+    timestamp: number
     method: string
     url: string
     headers: NameValuePair[]

@@ -1,7 +1,7 @@
 //const chromeStorage = (chrome.storage) ? true : false;
 
 import { HttpRequest, HttpRequestBundle } from "./http-exchange"
-import { SettingsType } from "./settings"
+import { AppSettings, SettingsType } from "./settings"
 
 /**
  * this class is cable of storing data chrome.storage.local when available, otherwise
@@ -12,7 +12,7 @@ export class Storage {
     static Keys = {
         urlHistory: 'urlHistory',
         headerHistory: 'headerHistory',
-        //requestHistory: 'requestHistory', TODO
+        requestHistory: 'requestHistory',
         oauths: 'oauths', 
         bundles: 'bundles',
         settings: 'settings',
@@ -35,8 +35,12 @@ export class Storage {
         this.storeUrls([url]);
     }
 
+    static isHttpOrHttps(url: string): boolean {
+        return url.startsWith('http://') || url.startsWith('https://')
+    }
+
     static storeUrls(newUrls: string[]): void {
-        newUrls = newUrls.filter(url => url.startsWith('http://') || url.startsWith('https://'))
+        newUrls = newUrls.filter(url => Storage.isHttpOrHttps(url))
         if(newUrls.length < 1) {
             return;
         }
@@ -84,6 +88,24 @@ export class Storage {
 
     static storeBundles(bundles: HttpRequestBundle[]): void {
         localStorage.setItem(Storage.Keys.bundles, JSON.stringify(bundles));
+    }
+
+    static listRequestHistory(): HttpRequest[] {
+        const requestHistory = localStorage.getItem(Storage.Keys.requestHistory);
+        return requestHistory ? JSON.parse(requestHistory) : []
+    }
+
+    static updateRequestHistory(httpRequest: HttpRequest): void {
+        if(!Storage.isHttpOrHttps(httpRequest.url)) {
+            return;
+        }
+        const requestHistory = Storage.listRequestHistory()
+        requestHistory.unshift(httpRequest)
+        const limit = AppSettings.get().historyLimit
+        if (requestHistory.length > limit) {
+            requestHistory.splice(limit)
+        }
+        localStorage.setItem(Storage.Keys.requestHistory, JSON.stringify(requestHistory))
     }
 
     static getSettings(): SettingsType | null {
