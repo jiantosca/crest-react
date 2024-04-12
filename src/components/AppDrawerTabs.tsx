@@ -102,7 +102,8 @@ const HistoryTabContent = () => {
                     <HttpRequestListItem key={index} request={request}
                         displayText={`${request.method} ${request.url}`}
                         includeDateInToolTip={true}
-                        wordWrap={false}
+                        //wordWrap={false}
+                        wordWrap={true}
                         deleteButton={<IconButton key='delete' size='small' onClick={() => handleDelete(request)}><DeleteForeverIcon color='warning' /></IconButton>}
                         buttons={[
                             <IconButton key={`save-${index}`} size='small' onClick={() => handleSave(request)}><SaveIcon /></IconButton>
