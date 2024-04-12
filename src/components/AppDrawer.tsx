@@ -19,7 +19,7 @@ import { useTheme } from '@mui/material/styles';
 import { useApplicationContext } from '../support/react-contexts';
 import { RcUtils } from '../support/rest-client-utils';
 import { loadBundleEventType } from './RequestBuilder'
-import { HttpRequestBundle } from '../support/http-exchange';
+import { HttpRequest } from '../support/http-exchange';
 import { AppSettings } from '../support/settings';
 import { AppDrawerTabs } from './AppDrawerTabs';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -35,12 +35,12 @@ export const AppDrawer = () => {
     const padLeft = 2;
 
     /**
-     * Resets the request builder to a clean slate. We just leverage the load bundle stuff passing in
-     * a bundle causing defaults to get set.
+     * Resets the request builder to a clean slate. We just leverage the load request stuff passing in
+     * a request causing defaults to get set.
      */
     const clearRequestBuilder = () => {
-        const bundle = {} as HttpRequestBundle
-        document.dispatchEvent(new CustomEvent(loadBundleEventType, { detail: bundle }))
+        const httpRequest = {} as HttpRequest
+        document.dispatchEvent(new CustomEvent(loadBundleEventType, { detail: httpRequest }))
     }
 
     // unlike darkmode toggle that uses the more global drawerState that has darkMode attribute, we'll just use a local state for this. For 

@@ -10,7 +10,7 @@ import { loadBundleEventType } from './RequestBuilder'
 export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<string> }) => {
     const renderCounter = React.useRef(0)
     console.log(`<UrlAutoComplete /> rendered ${++renderCounter.current} times`)
-    const bundlePrefix = 'bundle: '
+    const savedPrefix = 'saved: '
     const oauthPrefix = 'crest-oauth: '
     
     const filterUrlOptions = (options: string[], state: FilterOptionsState<string>): string[] => {
@@ -28,8 +28,8 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
       // Return up to 100 suggestions when all tokens much be in the url, and the url doesn't 
       // match the current input value. URL history can get big and we don't want to be redering
       // crazy amounts of suggestions.
-      [ ...Storage.listBundles().map(bundle => bundlePrefix + bundle.name), 
-        ...Storage.listOAuths().map(oauth => oauthPrefix + oauth.id), 
+      [ ...Storage.listHttpRequests().map(httpRequest => savedPrefix + httpRequest.name), 
+        ...Storage.listOAuths().map(oauth => oauthPrefix + oauth.name), 
         ...Storage.listUrls(), 
         ...Storage.listPersistenceUrls()].sort().some((url) => {
         if (tokens.every(token => url.includes(token)) &&
@@ -49,9 +49,9 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
         return
       }
       //loadBundleEventType
-      if(newUrl?.startsWith(bundlePrefix) || newUrl?.startsWith(oauthPrefix)) {
-        const name = newUrl.split(bundlePrefix)[1] || newUrl.split(oauthPrefix)[1]
-        const bundleOrOauth = Storage.getBundle(name) || Storage.getOAuth(name)
+      if(newUrl?.startsWith(savedPrefix) || newUrl?.startsWith(oauthPrefix)) {
+        const name = newUrl.split(savedPrefix)[1] || newUrl.split(oauthPrefix)[1]
+        const bundleOrOauth = Storage.getHttpRequest(name) || Storage.getOAuth(name)
         const loadEvent = new CustomEvent(loadBundleEventType, { detail: bundleOrOauth })
         document.dispatchEvent(loadEvent)
       } else {
@@ -68,9 +68,9 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
       // every time the suggestions pop up it selection starts with first item, but what happes in last selected item is selected. No biggie really.
       props['aria-selected'] = false
   
-      if(option.startsWith(bundlePrefix)) {
+      if(option.startsWith(savedPrefix)) {
         return (
-          <li {...props}><b>{bundlePrefix}</b>&nbsp;{option.replace(bundlePrefix, '')}</li>
+          <li {...props}><b>{savedPrefix}</b>&nbsp;{option.replace(savedPrefix, '')}</li>
         )
       } else if(option.startsWith(oauthPrefix)) {
         return (

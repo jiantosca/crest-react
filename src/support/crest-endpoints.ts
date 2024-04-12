@@ -1,4 +1,4 @@
-import { HttpRequest, HttpExchange, NameValuePair, HttpRequestBundle } from './http-exchange'
+import { HttpRequest, HttpExchange, NameValuePair } from './http-exchange'
 import { RcUtils } from './rest-client-utils'
 import { Storage } from './storage'
 
@@ -114,6 +114,9 @@ const putStorage = (httpRequest: HttpRequest, storageKey: string | null) => {
                 putResults.notPutItems[key] = `${key} is not a supported key.`
             }
         })
+        
+        // i really want to make crest-endpoints more strict eventually, but for now we're being lenient which can allow room for duplications
+        // being entered into storage. So for now just a bit of manual clean up which may or may not be needed depending on what was PUT.
         return createExchange(httpRequest, JSON.stringify(putResults))
     }
 }
@@ -140,7 +143,7 @@ const putStorage = (httpRequest: HttpRequest, storageKey: string | null) => {
  */
 const fromLegacyStorage = (legacyStorage: any): any => {
     const newStorage:any = {}
-
+    delete legacyStorage.localStorage.savedRequests
     legacyStorage.localStorage.forEach((item: any) => {
         switch (item.key) {
             case 'uriHistory':
@@ -151,24 +154,27 @@ const fromLegacyStorage = (legacyStorage: any): any => {
                 break;
             case 'bundles':
                 const legacyBundles: any[] = JSON.parse(item.value)
-                const bundles: HttpRequestBundle[] = []
+                const savedRequests: HttpRequest[] = []
 
                 legacyBundles.forEach((bundle: any) => {
-                    bundles.push({
+                    savedRequests.push({
+                        id: RcUtils.generateGUID(),
                         name: bundle.name,
-                        method: bundle.method,
-                        url: bundle.url,
-                        headers: (bundle.headers as string[]).map(header => RcUtils.parseHeaderLine(header)),
+                        timestamp: new Date().getTime(),
+                        method: (bundle.method) ? bundle.method : 'GET',
+                        url: (bundle.url) ? bundle.url : '',
+                        headers: (bundle.headers) ? (bundle.headers as string[]).map(header => RcUtils.parseHeaderLine(header)) : [],
                         body: bundle.body,
                     })
                 })
-                newStorage[item.key] = bundles
+                newStorage['savedRequests'] = savedRequests
                 break;
             case 'simpleOAuth':
                 const legacyOAuths: any[] = JSON.parse(item.value)
                 const oauths: HttpRequest[] = legacyOAuths.map((legacyOauth: any) => {
                     return {
                         id: legacyOauth.name,
+                        name: legacyOauth.name,
                         timestamp: new Date().getTime(),
                         method: legacyOauth.method,
                         url: legacyOauth.url,
@@ -183,6 +189,11 @@ const fromLegacyStorage = (legacyStorage: any): any => {
                 // and have some sesnible defaults.
                 newStorage['legacySettings'] = JSON.parse(item.value)
                 break;
+            case 'savedRequests':
+                // we're effectively ignoring the legacy settings since new ext will do some things differently
+                // and have some sesnible defaults.
+                newStorage['legacySavedRequests'] = JSON.parse(item.value)
+                break;                
             default:
                 newStorage[item.key] = JSON.parse(item.value)
         }

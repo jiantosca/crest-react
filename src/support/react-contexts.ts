@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { HttpExchange } from './http-exchange'
+import { Breakpoint } from '@mui/material'
 
 
 //maybe i should rename this to UiContext or AppUiContext
@@ -9,7 +10,7 @@ export type Application = {
     drawerWidth: number
     toggleDarkMode: () => void
     toggleDrawer: () => void
-    showDialog: (title: string, children: React.ReactElement) => void
+    showDialog: (title: string, children: React.ReactElement, maxWidth?: Breakpoint | false ) => void
     hideDialog: () => void
 }
 export const ApplicationContext = React.createContext<Application | undefined>(undefined);

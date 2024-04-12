@@ -7,6 +7,9 @@ export const DevNotes = () => {
             <b>TODOs</b>
             <ul>
                 <li>for saved requests use date sub list</li>
+                <li>figure out for history if request has already been saved by comparing method, url, header, body so that duplicates aren't saved.</li>
+                <li>Rename RcUtils to something else since i think we'll stick with cREST name.</li>
+                <li>RequestButton and RequestEditor has some overlapping validation code we could refactor into one place</li>
                 <li>Had to use a div in AppDrawer ListItemText for history to show the ellipsis on overflow, maybe url autocomplete needs the same?</li>
                 <li>need to ensure we always have a content length, sometimes server don't return one.</li>
                 <li>rename storage to persistence.</li>

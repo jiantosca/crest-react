@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Dialog, DialogTitle, DialogContent, IconButton, Paper } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, IconButton, Paper, Breakpoint } from '@mui/material';
 import { useApplicationContext } from '../support/react-contexts'
 import CloseIcon from '@mui/icons-material/Close';
 import { RcUtils } from '../support/rest-client-utils';
@@ -12,6 +12,7 @@ export type AppDialogStateType = {
   dividers: boolean
   title: string
   content: React.ReactElement
+  maxWidth: Breakpoint | false
 }
 
 /**
@@ -21,7 +22,8 @@ export const closedAppDialogState: AppDialogStateType = {
   isOpen: false,
   dividers: false,
   title: '',
-  content: <></>
+  content: <></>,
+  maxWidth: 'sm'
 }
 
 /**
@@ -41,7 +43,17 @@ export const appDialogEventName = 'appDialogEvent'
  * @returns 
  */
 export const AppDialog = () => {
+  const renderCounter = React.useRef(0)
+  console.log(`<AppDialog /> rendered ${++renderCounter.current} times`)
+
   const [appDialogState, setAppDialogState] = React.useState<AppDialogStateType>(closedAppDialogState);
+  
+  // <Dialog
+  //   maxWidth='lg' // 'xs', 'sm', 'md', 'lg', 'xl', or false
+  //   sx={{ width: '80vw' }} // Adjust this value as needed
+  // >
+  //   {/* ... */}
+  // </Dialog>
 
   React.useEffect(() => {
     const handleAppDialogEvent: EventListener = (event) => {
@@ -60,7 +72,7 @@ export const AppDialog = () => {
     // based on this...
     // https://mui.com/material-ui/react-dialog/#customization
     <Dialog
-      maxWidth='xl'
+      maxWidth={appDialogState.maxWidth}
       open={appDialogState.isOpen}
       onClose={appContext.hideDialog}
       PaperComponent={(props) => {

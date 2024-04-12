@@ -1,17 +1,32 @@
+/* 
+https://stackoverflow.com/questions/76187282/react-resizeobserver-loop-completed-with-undelivered-notifications
+
+this is a total hack from what i hear. When long text is in headers field and i resise
+and shrink/expand the text i get a big error but the app is still working if you just
+close the error. 
+
+They say:
+If you aren't using ResizeObserver in your code, you shouldn't worry about it, it will 
+not appear in build version of your app.
+
+If you are using ResizeObserver check this to get a better understanding of the causes 
+of the error Observation Errors:
+*/
+/* doesn't actually work :( 
+  iframe#webpack-dev-server-client-overlay { 
+    display: none !important
+}  */
+
+after a build; 
+  serve -s build
+
+
 Installs:
     Material:
         npm install @mui/material @emotion/react @emotion/styled
     Icons: 
         npm install @mui/icons-material
-    
-    eslint:
 
-        npm init @eslint/config
-            https://dev.to/anukr98/setting-up-eslint-with-tsjs-in-your-react-project-in-2023-57o
-            had to force parser update: npm i @typescript-eslint/parser@6.21.0
-
-After eslint install i had to do this:
-npm install --legacy-peer-deps
 
 
 
@@ -55,3 +70,5 @@ code[class*="language-"], pre[class*="language-"]
             this.entityPre.classList.add('language-none');
             //this.entityCode.classList.add('language-none');
         }
+
+settings update with darkmode & drawer state persisted

@@ -67,7 +67,7 @@ export const RequestHeaderAutocomplete = ({ headersRef }: { headersRef: React.Mu
         const existingHeaders = lines.map((line: string) => line.toLowerCase())
 
         //combine he header history with the oauth history to get a list of possible suggestions
-        const possibleSuggestions = [...Storage.listHeaders(), ...Storage.listOAuths().map(oauth => `crest-oauth: ${oauth.id}`)]
+        const possibleSuggestions = [...Storage.listHeaders(), ...Storage.listOAuths().map(oauth => `crest-oauth: ${oauth.name}`)]
         
         const stringSuggestions = possibleSuggestions.filter((header) => { 
             const lcHeader = header.toLowerCase()
@@ -133,7 +133,7 @@ export const RequestHeaderAutocomplete = ({ headersRef }: { headersRef: React.Mu
                     headersRef.current = selected.value
                 }
             }}
-            //adding HeadeOptionType here for bundle load.  
+            //adding HeadeOptionType here for HttpRequest load.  
             value={{suggested: "initial", value: headersRef.current}}
             //defaultValue={headersRef.current}
             clearIcon={null}

@@ -9,7 +9,7 @@ import MenuIcon from '@mui/icons-material/Menu'
 import { useApplicationContext } from '../support/react-contexts'
 import { RequestHeaderAutocomplete } from './RequestHeaderAutocomplete'
 import { RequestButton, requestSentEventType, requestCompleteEventType } from './RequestButton'
-import { HttpRequest, HttpRequestBundle } from '../support/http-exchange'
+import { HttpRequest } from '../support/http-exchange'
 import { UrlAutoComplete } from './RequestUrlAutocomplete'
 
 export const loadBundleEventType = 'loadBundle'
@@ -56,11 +56,11 @@ export const RequestBuilder = () => {
 
   // Below are refs to keys used for the UrlAutoComplete, RequestHeaderAutocomplete and BodyInput components. We need to be able to control 
   // when a component is rerendered vs created brand new. By setting unique key we can force a new comp instead of a rerender. This is 
-  // required for loading bundles which happens on an event. The refs are updated in the useEffect below using a guid to force new comp.  
+  // required for loading http requests which happens on an event. The refs are updated in the useEffect below using a guid to force new comp.  
   // Otherwise during nrormal use the key will be the same and the comp will only rerender. 
   //
   // This is needed mostly because the auto completes that don't state being programatically updated after it's first render. So ensuring
-  // a new comp is created instead of a rerender we get around the issue. This only happens on the bundle load event. 
+  // a new comp is created instead of a rerender we get around the issue. This only happens on the http request load event. 
   //
   // Here's the react MUI error: 
   //  MUI: A component is changing the default value state of an uncontrolled Autocomplete after being initialized.
@@ -77,20 +77,20 @@ export const RequestBuilder = () => {
   React.useEffect(() => {
     const bundleLoader: EventListener = (event) => {
 
-      // only make unique on bundle load event, this'll force new comp creation instead of rerender needed for auto completes
+      // only make unique on http request load event, this'll force new comp creation instead of rerender needed for auto completes
       // and even body input so helper text moves out of the way.
       urlKeyRef.current = `urlKey-${RcUtils.generateGUID()}`
       headerKeyRef.current = `headerKey-${RcUtils.generateGUID()}`
       bodyKeyRef.current = `bodyKey-${RcUtils.generateGUID()}`
 
-      const bundle = (event as CustomEvent<any>).detail as HttpRequestBundle | HttpRequest
-      urlRef.current = (bundle.url) ? bundle.url : ''
-      headersRef.current = bundle.headers?.map(header => `${header.name}: ${header.value}`).join('\n') || ''
-      bodyRef.current = bundle.body || ''
+      const httpRequest = (event as CustomEvent<any>).detail as HttpRequest
+      urlRef.current = (httpRequest.url) ? httpRequest.url : ''
+      headersRef.current = httpRequest.headers?.map(header => `${header.name}: ${header.value}`).join('\n') || ''
+      bodyRef.current = httpRequest.body || ''
 
-      //now we need to set the method and ensure we rerender. If the bundle has a different method than the current value then we'll get
+      //now we need to set the method and ensure we rerender. If the request has a different method than the current value then we'll get
       //a rerender by setting method state, otherise we use the forcedRender state var to cause a rerender.
-      const theMethod = bundle.method || 'GET'
+      const theMethod = httpRequest.method || 'GET'
 
       window.scrollTo(0, 0)
       

@@ -1,7 +1,7 @@
 import './App.css';
 import * as React from 'react';
 //import useMediaQuery from '@mui/material/useMediaQuery';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Breakpoint, ThemeProvider, createTheme } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -65,11 +65,13 @@ function App() {
       appState.isDarkMode = AppSettings.toggleDarkMode()
       setAppState({ ...appState })
     },
-    showDialog: (title: string, content: React.ReactElement) => {
+    showDialog: (title: string, content: React.ReactElement, maxWidth?: Breakpoint | false ) => {
+
       const dialogState: AppDialogStateType = { 
         isOpen: true,
         dividers: false,
         title: title,
+        maxWidth: maxWidth !== undefined ? maxWidth : 'sm',
         content: content
       }
       const event = new CustomEvent(appDialogEventName, {detail: dialogState});

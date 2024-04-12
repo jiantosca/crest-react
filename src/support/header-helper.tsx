@@ -5,7 +5,7 @@ import { Alert, Stack, Typography } from '@mui/material'
 import { Storage } from './storage';
 export class HeaderHelper {
 
-    private unresolvedHeaders: NameValuePair[];
+    private headers: NameValuePair[];
     private resolvedHeaders: NameValuePair[];
     private requestId: string;
     private showDialog: (title: string, children: ReactElement<any, string | JSXElementConstructor<any>>) => void;
@@ -24,14 +24,14 @@ export class HeaderHelper {
         showDialog: (title: string, children: ReactElement<any, string | JSXElementConstructor<any>>) => void
         ) {
         
-        this.unresolvedHeaders = [...headers]//clone it so we don't ever modify the original
+        this.headers = [...headers]//clone it so we don't ever modify the original
         this.resolvedHeaders = []
         this.requestId = requestId
         this.showDialog = showDialog
     }
-
+    
     getUnresolvedHeaders(): NameValuePair[] {
-        return this.unresolvedHeaders
+        return this.headers
     }
 
     async resolveHeaders(): Promise<NameValuePair[]> {
@@ -39,7 +39,7 @@ export class HeaderHelper {
         let oauthRequest: HttpRequest | undefined
         const problems: string[] = []
 
-        this.unresolvedHeaders.forEach((header) => {
+        this.headers.forEach((header) => {
             
 
             if (header.name.startsWith('crest-oauth')) {

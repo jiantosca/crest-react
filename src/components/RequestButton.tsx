@@ -159,12 +159,13 @@ export const RequestButton = (
         }
         return
       }
-
+      
       if (httpExchange.response.statusCode < 300) {
         Storage.storeUrl(httpRequest.url)
         Storage.storeHeaders(headerLines)
         Storage.updateRequestHistory({
           ...httpRequest,
+          isOAuth: RcUtils.isOauth(httpExchange.response),
           headers: unresolvedHeaders ? unresolvedHeaders : []
         })
       }
@@ -186,8 +187,7 @@ export const RequestButton = (
       problems.push('Enter a valid URL that starts with http:// or https://')
     }
 
-    const headerLines = headersRef.current.trim().split('\n')
-      .filter(header => header.trim() !== '')
+    const headerLines = headersRef.current.trim().split('\n').filter(header => header.trim() !== '')
 
     const headerNameValues: NameValuePair[] = (headerLines.length > 0) ?
       headerLines.map(header => {
@@ -199,7 +199,7 @@ export const RequestButton = (
       }) : []
 
     if (problems.length > 0) {
-      const problemListItems = problems.map(problem => <Alert severity="error"><Typography>{problem}</Typography></Alert>)
+      const problemListItems = problems.map((problem, index) => <Alert key={index} severity="error"><Typography>{problem}</Typography></Alert>)
       appContext.showDialog('Invalid Request', <Stack sx={{ width: '100%', pt: 1 }} spacing={2}>{problemListItems}</Stack>)
       return
     }
@@ -239,6 +239,8 @@ export const RequestButton = (
 
     const httpRequest: HttpRequest = {
       id: guid,
+      //name: `${methodRef.current} ${urlRef.current} ${guid}`,
+      name: '',
       timestamp: new Date().getTime(),
       method: methodRef.current,
       url: urlRef.current,

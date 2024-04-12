@@ -1,5 +1,5 @@
 import { OverridableStringUnion } from "@mui/types";
-import { NameValuePair } from "./http-exchange";
+import { HttpResponse, NameValuePair } from "./http-exchange";
 
 export class RcUtils {
 
@@ -33,5 +33,13 @@ export class RcUtils {
   static parseHeaderLine(headerLine: string): NameValuePair {
     const [name, ...value] = headerLine.split(':')
     return { name: name, value: value.join(':').trim() } as NameValuePair
+  }
+
+  static isOauth(response: HttpResponse): boolean {
+    try {
+      return response.body && JSON.parse(response.body).access_token ? true : false
+    } catch(e) {
+      return false
+    }
   }
 }

@@ -1,6 +1,6 @@
 //const chromeStorage = (chrome.storage) ? true : false;
 
-import { HttpRequest, HttpRequestBundle } from "./http-exchange"
+import { HttpRequest } from "./http-exchange"
 import { AppSettings, SettingsType } from "./settings"
 
 /**
@@ -14,7 +14,7 @@ export class Storage {
         headerHistory: 'headerHistory',
         requestHistory: 'requestHistory',
         oauths: 'oauths', 
-        bundles: 'bundles',
+        savedRequests: 'savedRequests',
         settings: 'settings',
         listKeys: () => {
             const keys: string[] = Object.values(Storage.Keys).filter(
@@ -62,9 +62,9 @@ export class Storage {
         Storage.mergeAndStore(Storage.Keys.headerHistory, historyHeaders, newHeaders)
     }
 
-    static getOAuth(id: string): HttpRequest | undefined {
+    static getOAuth(name: string): HttpRequest | undefined {
         const oauths = Storage.listOAuths()
-        return oauths.find(oauth => oauth.id === id)
+        return oauths.find(oauth => oauth.name === name)
     }
 
     static listOAuths(): HttpRequest[] {
@@ -76,18 +76,18 @@ export class Storage {
         localStorage.setItem(Storage.Keys.oauths, JSON.stringify(oauths));
     }
     
-    static listBundles(): HttpRequestBundle[] {
-        const bundles = localStorage.getItem(Storage.Keys.bundles);
+    static listHttpRequests(): HttpRequest[] {
+        const bundles = localStorage.getItem(Storage.Keys.savedRequests);
         return bundles ? JSON.parse(bundles) : [];
     }
     
-    static getBundle(name: string): HttpRequestBundle | undefined {
-        const bundles = Storage.listBundles();
-        return bundles.find(bundle => bundle.name === name)
+    static getHttpRequest(name: string): HttpRequest | undefined {
+        const bundles = Storage.listHttpRequests();
+        return bundles.find(request => request.name === name)
     }
 
-    static storeBundles(bundles: HttpRequestBundle[]): void {
-        localStorage.setItem(Storage.Keys.bundles, JSON.stringify(bundles));
+    static storeHttpRequests(httpRequests: HttpRequest[]): void {
+        localStorage.setItem(Storage.Keys.savedRequests, JSON.stringify(httpRequests));
     }
 
     static listRequestHistory(): HttpRequest[] {
@@ -106,6 +106,10 @@ export class Storage {
             requestHistory.splice(limit)
         }
         localStorage.setItem(Storage.Keys.requestHistory, JSON.stringify(requestHistory))
+    }
+
+    static storeRequestHistory(requestHistory: HttpRequest[]): void {
+        localStorage.setItem(Storage.Keys.requestHistory, JSON.stringify(requestHistory));
     }
 
     static getSettings(): SettingsType | null {
