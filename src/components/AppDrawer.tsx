@@ -18,7 +18,7 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import { useTheme } from '@mui/material/styles';
 import { useApplicationContext } from '../support/react-contexts';
 import { RcUtils } from '../support/rest-client-utils';
-import { loadBundleEventType } from './RequestBuilder'
+import { loadRequestEventType } from './RequestBuilder'
 import { HttpRequest } from '../support/http-exchange';
 import { AppSettings } from '../support/settings';
 import { AppDrawerTabs } from './AppDrawerTabs';
@@ -40,7 +40,7 @@ export const AppDrawer = () => {
      */
     const clearRequestBuilder = () => {
         const httpRequest = {} as HttpRequest
-        document.dispatchEvent(new CustomEvent(loadBundleEventType, { detail: httpRequest }))
+        document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: httpRequest }))
     }
 
     // unlike darkmode toggle that uses the more global drawerState that has darkMode attribute, we'll just use a local state for this. For 

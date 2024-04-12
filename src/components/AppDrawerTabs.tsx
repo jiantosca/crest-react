@@ -3,7 +3,7 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { Tab, Tabs, Divider, Box, Typography, Tooltip, Stack, IconButton } from '@mui/material';
-import { loadBundleEventType } from './RequestBuilder'
+import { loadRequestEventType } from './RequestBuilder'
 import { Storage } from '../support/storage';
 import { HttpRequest } from '../support/http-exchange';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -57,7 +57,7 @@ export const AppDrawerTabs = () => {
         <>
             <Tabs value={tabValue} onChange={handleTabChange}>
                 <Tab label="History" id='tab-history' />
-                <Tab label="Saved" id='tab-bundles' />
+                <Tab label="Saved" id='tab-saved' />
                 <Tab label="OAuth" id='tab-oauth' />
             </Tabs>
             <Divider />
@@ -232,7 +232,7 @@ const HttpRequestListItem = ({ request, displayText, wordWrap, includeDateInTool
                 >
                     <IconButton key='load' size='small'
                         onClick={() => {
-                            document.dispatchEvent(new CustomEvent(loadBundleEventType, { detail: request }))
+                            document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: request }))
                             setTimeout(() => setIsTooltipOpen(false), 250)
                         }}
                         onMouseEnter={() => setIsTooltipOpen(true)}

@@ -5,7 +5,7 @@ import {
 } from '@mui/material'
 import { FilterOptionsState } from '@mui/material'
 import { Storage } from "../support/storage"
-import { loadBundleEventType } from './RequestBuilder'
+import { loadRequestEventType } from './RequestBuilder'
 
 export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<string> }) => {
     const renderCounter = React.useRef(0)
@@ -51,8 +51,8 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
       //loadBundleEventType
       if(newUrl?.startsWith(savedPrefix) || newUrl?.startsWith(oauthPrefix)) {
         const name = newUrl.split(savedPrefix)[1] || newUrl.split(oauthPrefix)[1]
-        const bundleOrOauth = Storage.getHttpRequest(name) || Storage.getOAuth(name)
-        const loadEvent = new CustomEvent(loadBundleEventType, { detail: bundleOrOauth })
+        const httpRequest = Storage.getHttpRequest(name) || Storage.getOAuth(name)
+        const loadEvent = new CustomEvent(loadRequestEventType, { detail: httpRequest })
         document.dispatchEvent(loadEvent)
       } else {
         urlRef.current = newUrl || ''

@@ -12,7 +12,7 @@ import { RequestButton, requestSentEventType, requestCompleteEventType } from '.
 import { HttpRequest } from '../support/http-exchange'
 import { UrlAutoComplete } from './RequestUrlAutocomplete'
 
-export const loadBundleEventType = 'loadBundle'
+export const loadRequestEventType = 'loadRequest'
 
 /**
  * 
@@ -75,7 +75,7 @@ export const RequestBuilder = () => {
   const [forcedRender, setForcedRender] = React.useState<number>(0)
 
   React.useEffect(() => {
-    const bundleLoader: EventListener = (event) => {
+    const requestLoader: EventListener = (event) => {
 
       // only make unique on http request load event, this'll force new comp creation instead of rerender needed for auto completes
       // and even body input so helper text moves out of the way.
@@ -101,10 +101,10 @@ export const RequestBuilder = () => {
       }
     }
 
-    document.addEventListener(loadBundleEventType, bundleLoader)
+    document.addEventListener(loadRequestEventType, requestLoader)
     // Cleanup function to remove the event listener when the component unmounts
     return () => {
-      document.removeEventListener(loadBundleEventType, bundleLoader)
+      document.removeEventListener(loadRequestEventType, requestLoader)
     }
   }, [method]);
 
