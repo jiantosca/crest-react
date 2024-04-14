@@ -11,13 +11,13 @@ export type HttpRequest = {
     method: string
     url: string
     headers: NameValuePair[]
+    unresolvedHeaders: NameValuePair[]
     body?: string
 }
 
 export type HttpResponse = {
     statusCode: number
     headers: NameValuePair[]
-    contentLength: number
     body?: string
 }
 
@@ -124,14 +124,10 @@ export class HttpExchangeHandler {
      * @returns 
      */
     private createHttpExchange(response?: Response, responseBody?: string): HttpExchange {
-        let contentLength = 0
         let contentTypeWithMineParam: NameValuePair | undefined
 
         const responseHeaders: NameValuePair[] = (response) ?
             Array.from(response.headers.entries()).map(entry => {
-                if (contentLength === 0 && entry[0].toLowerCase() === 'content-length') {
-                    contentLength = parseInt(entry[1])
-                }
                 if (entry[0].toLowerCase() === 'content-type' && entry[1].includes(';')) {
                     contentTypeWithMineParam = { name: entry[0], value: entry[1] }
                     return { name: entry[0], value: entry[1].split(';')[0] } // remove mine param since there's a bug in prism js :(. Hope they fix it soon.
@@ -141,11 +137,6 @@ export class HttpExchangeHandler {
 
         if (contentTypeWithMineParam) {
             responseHeaders.push({ ...contentTypeWithMineParam, name: `${contentTypeWithMineParam.name}-original`})
-        }
-        // some responses won't have a content-length header even though there's a body. We still need to know how long 
-        // the data is for other stuff like knowing when to pretty print (we have max size for that).
-        if(contentLength === 0 && responseBody) {
-            contentLength = responseBody.length
         }
 
         const statusCode: number = (response) ? response.status : 0
@@ -159,7 +150,6 @@ export class HttpExchangeHandler {
             request: this.httpRequest,
             response: {
                 statusCode: statusCode,
-                contentLength: contentLength,
                 headers: responseHeaders,
                 body: responseBody
             },

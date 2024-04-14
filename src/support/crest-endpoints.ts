@@ -163,7 +163,8 @@ const fromLegacyStorage = (legacyStorage: any): any => {
                         timestamp: new Date().getTime(),
                         method: (bundle.method) ? bundle.method : 'GET',
                         url: (bundle.url) ? bundle.url : '',
-                        headers: (bundle.headers) ? (bundle.headers as string[]).map(header => RcUtils.parseHeaderLine(header)) : [],
+                        headers: [],
+                        unresolvedHeaders: (bundle.headers) ? (bundle.headers as string[]).map(header => RcUtils.parseHeaderLine(header)) : [],
                         body: bundle.body,
                     })
                 })
@@ -178,7 +179,8 @@ const fromLegacyStorage = (legacyStorage: any): any => {
                         timestamp: new Date().getTime(),
                         method: legacyOauth.method,
                         url: legacyOauth.url,
-                        headers: (legacyOauth.headers as string[]).map(header => RcUtils.parseHeaderLine(header)),
+                        headers: [],
+                        unresolvedHeaders: (legacyOauth.headers as string[]).map(header => RcUtils.parseHeaderLine(header)),
                         body: legacyOauth.body,
                     }
                 })
@@ -229,7 +231,6 @@ const createExchange = (httpRequest: HttpRequest, body: string | null, headers?:
         request: httpRequest,
         response: {
             statusCode: (statusCode) ? statusCode : 200,
-            contentLength: (body) ? body.length : 0,
             //need to ensure new instance of headers since other code can modify it
             headers: headers ? [...headers] : [...jsonContent],
             body: (body) ? body : ''

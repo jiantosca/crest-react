@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { ButtonGroup, Card, CardHeader, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Stack, Tooltip, Typography } from "@mui/material"
+import { Alert, Box, ButtonGroup, Card, CardHeader, Divider, IconButton, LinearProgress, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Stack, Tooltip, Typography } from "@mui/material"
 import { HttpHighlighter } from "./HttpHighlighter";
 import { RcUtils } from '../support/rest-client-utils';
-import { HttpExchange } from "../support/http-exchange"
+import { HttpExchange, HttpExchangeHandler } from "../support/http-exchange"
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ReplayIcon from '@mui/icons-material/Replay';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -16,18 +16,29 @@ import PublishIcon from '@mui/icons-material/Publish';
 import CloseIcon from '@mui/icons-material/Close';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import { AppSettings } from '../support/settings';
+import { HeaderHelper } from '../support/header-helper';
+import { useApplicationContext } from '../support/react-contexts'
+import { loadRequestEventType } from './RequestBuilder'
+import { RequestEditor } from './RequestEditor';
 
 export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpExchange, deleteCallBack: (id: string) => void }) => {
     const renderCounter = React.useRef(0)
     console.log(`<HttpResponseCard /> rendered ${++renderCounter.current} times`)
 
+    //save exchange in state so we can rerun the request for a new exchange and update this component
+    const [exchangeState, setExchangeState] = React.useState<HttpExchange>(exchange)
+    const [rerunInFlight, setRerunInFlight] = React.useState<boolean>(false)
     const [wordWrap, setWordWrap] = React.useState<boolean>(AppSettings.isWordWrap())
+
+    const appContext = useApplicationContext()
+    const isHttp = exchangeState.request.url.startsWith('http')
+
     const toggleWordWrap = () => {
         setWordWrap(!wordWrap)
     }
 
     const handleDelete = () => {
-        deleteCallBack(exchange.request.id)
+        deleteCallBack(exchangeState.request.id)
     }
 
     const [moreAnchorEl, setMoreAnchorEl] = React.useState<null | HTMLElement>(null)
@@ -42,7 +53,6 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
     const [locked, setLocked] = React.useState<boolean>(false)
     const toggleLock = () => {
         setLocked(!locked)
-
     }
 
     const [headersShowing, setHeadersShowing] = React.useState<boolean>(false)
@@ -51,6 +61,85 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
         handleMoreClose()
     }
 
+    const [showRequest, setShowRequest] = React.useState<boolean>(false)
+    const toggleShowRequest = () => {
+        if(exchange.request.headers.length === 0 && !exchange.request.body) {
+            appContext.showDialog(' ', <Alert severity="info">The request has no headers & body to show.</Alert>)
+        } else {
+            setShowRequest(!showRequest)
+        }
+        
+        handleMoreClose()
+    }
+    const handleSave = () => {
+        appContext.showDialog('Save Request', <RequestEditor httpRequest={exchange.request} isOauth={exchange.request.isOAuth}/>, false)
+        handleMoreClose()
+    }
+
+    const handleLoad = () => {
+        handleMoreClose()
+        // when loading the request builder gets the load event, it'll scroll to the top of the page. But when trigging
+        // via popup menu like i'm doing here it doesn't scroll up all the way. So adding a bit of a timeout so the menu
+        // has time to close before triggering the event ...this seems to work. Note if even trigger from some other place
+        // that isn't via popup menu, no need for the setTimout (like in the loads via drawer tabs for history, saved, and oauth)
+        //document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: exchange.request }))
+        window.setTimeout(() => {
+            document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: exchange.request }))
+        }, 100)
+    }
+
+    /**
+     * This method has some overlap with RequestButton's sendClickCallback that handles http calls, but presumably much less to
+     * do on a rerun like validation and controlling all the state associated with the request builder. No stop button either, but
+     * I should add that at some point. 
+     */
+    const handleRerun = async () => {
+        setRerunInFlight(true)
+        const headerHelper = new HeaderHelper(exchangeState.request.unresolvedHeaders, exchangeState.request.id, appContext.showDialog)
+
+        const exchangeCompletionHandler = (exchange: HttpExchange) => {
+            if (exchange.response.statusCode === 0) {
+                RcUtils.showNoStatusCodeDialog(exchange, appContext)
+            } else {
+                if (!RcUtils.isExtensionRuntime()) {
+                    exchange.response.headers.push({ name: 'headers-suppressed', value: 'because not running as extension (see fetch & Access-Control-Expose-Headers)' })
+                  }                
+                setExchangeState(exchange)
+            }
+            
+            setRerunInFlight(false)
+        }
+
+        try {
+            const resolvedHeaders = await headerHelper.resolveHeaders()
+            const request = {
+                ...exchangeState.request,
+                headers: resolvedHeaders
+            }
+            if (RcUtils.isExtensionRuntime()) {
+                console.log('<RequestButton />.sendClickCallback running as extension')
+                chrome.runtime.sendMessage(request, exchangeCompletionHandler);
+              } else {
+                console.log('<RequestButton />.sendClickCallback not running as extension')
+                const httpExchangeHandler = new HttpExchangeHandler(request)
+                httpExchangeHandler.submitRequest().then(exchangeCompletionHandler)
+              }            
+          } catch (error) {
+            console.log('Header helper was either aborted, or if there was a real issue it should have already triggered ' +
+              'a dialog for the user to review the issue. Error: ', error)
+            setRerunInFlight(false)
+            return;
+          }
+
+        
+        // setTimeout(() => {
+        //     setRerunInFlight(false)
+        // } , 1500)
+
+        // console.log({...exchange})
+        // console.log('rerun')
+    }
+    
     const iconSize = RcUtils.iconButtonSize
     const iconColor = 'inherit'
     const iconDeleteColor = 'warning'
@@ -84,38 +173,35 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                 }}
                 title={
                     // .3 padding on the bottom cause action buttons were 
-                    <Stack direction='row' spacing={1.25} border={0} alignItems="center" pb={.3}>
+                    <Stack direction='row' spacing={1.25} border={0} alignItems="center" pb={.4}>
                         <Typography component="div" sx={{
-                            backgroundColor: (theme) => exchange.response.statusCode < 400 ? theme.palette.success.main : theme.palette.error.main,
+                            backgroundColor: (theme) => exchangeState.response.statusCode < 400 ? theme.palette.success.main : theme.palette.error.main,
                             borderRadius: '5px', // Adjust this to change the roundness of the corners
                             padding: '1px 5px 1px 5px', // Adjust this to change the padding inside the box
-                            // color: (theme) => theme.palette.text.primary
                             color: 'white',
                             fontWeight: 'bold',
                             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
-                            fontSize: '1.05rem'
-                        }}>{exchange.response.statusCode}</Typography>
+                            //fontSize: '1.05rem'
+                        }}>{exchangeState.response.statusCode}</Typography>
                         <Typography sx={{
-                            fontSize: '1.05rem',
+                            //fontSize: '1.05rem',
                         }}
-                        >{exchange.request.method}</Typography>
+                        >{exchangeState.request.method}</Typography>
                         <Typography sx={{
-                            fontSize: '1.05rem'
+                            // fontSize: '1.05rem'
                             // overflowWrap: "break-word",
                             // wordBreak: 'break-word',
-                        }}>{exchange.request.url}</Typography>
+                        }}>{exchangeState.request.url}</Typography>
                     </Stack>
                 }
-
-
-                // subheader={
-                //     'September 14, 2016'
-                // }
-
+                //subheader={'I could put response times here'}
                 action={
                         <ButtonGroup sx={{pl: '10px'}} orientation='horizontal' aria-label='response button group'>
-                            <Tooltip title='Toggle word wrap'>
-                                <IconButton aria-label="rerun" size={iconSize} onClick={toggleWordWrap}>
+                            <IconButton disabled={!isHttp || rerunInFlight} aria-label="rerun" size={iconSize} onClick={handleRerun}>
+                                <ReplayIcon color={iconColor} />
+                            </IconButton>
+                            <Tooltip title='Toggle word wrap' enterDelay={1000}>
+                                <IconButton aria-label="wordwrap" size={iconSize} onClick={toggleWordWrap}>
                                     <WrapTextIcon color={iconColor} />
                                 </IconButton>
                             </Tooltip>
@@ -126,9 +212,6 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                                 <IconButton aria-label="unlock" size={iconSize} onClick={toggleLock}>
                                     <LockOpenIcon color={iconColor} />
                                 </IconButton>)}
-                            <IconButton aria-label="rerun" size={iconSize}>
-                                <ReplayIcon color={iconColor} />
-                            </IconButton>
                             <IconButton aria-label="more" size={iconSize}
                                 id='more-button'
                                 onClick={handleMoreClick}
@@ -138,14 +221,18 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                             >
                                 <MoreVertIcon color={iconColor} />
                             </IconButton>
-                            <IconButton aria-label="delete" size={iconSize} onClick={handleDelete}>
+
+                            <IconButton aria-label="delete" size={iconSize} onClick={handleDelete} disabled={locked}>
                                 {/* <DeleteIcon color={iconDeleteColor} /> */}
-                                <CloseIcon color={iconDeleteColor} />
+                                {/* <DeleteForeverOutlinedIcon color={iconDeleteColor}></DeleteForeverOutlinedIcon> */}
+                                <CloseIcon color={locked ? iconColor:iconDeleteColor} />
                             </IconButton>
+
                             <Menu id='more-menu'
                             anchorEl={moreAnchorEl}
                             open={isMoreOpen}
-                            MenuListProps={{ 'aria-labelledby': 'resources-button' }}
+                            //can't remember why i needed below, seems to work without it
+                            //MenuListProps={{ 'aria-labelledby': 'resources-button' }}
                             onClose={handleMoreClose}
                             // Checkout popover link below for more details on how to position the menu
                             // https://mui.com/material-ui/react-popover/
@@ -153,23 +240,23 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                             // transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                         >
                             <MenuList>
-                                <MenuItem onClick={handleMoreClose}>
+                                <MenuItem onClick={toggleShowRequest}>
                                     <ListItemIcon><HttpIcon /></ListItemIcon>
                                     <ListItemText>Request</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={toggleHeadersShowing}>
+                                <MenuItem onClick={toggleHeadersShowing} disabled={true}>
                                     <ListItemIcon>{headersShowing ? (<RemoveCircleOutlineIcon />) : (<AddCircleOutlineIcon />)}</ListItemIcon>
                                     <ListItemText>Headers</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={handleMoreClose}>
+                                <MenuItem onClick={handleLoad}>
                                     <ListItemIcon><PublishIcon /></ListItemIcon>
                                     <ListItemText>Load</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={handleMoreClose}>
+                                <MenuItem onClick={handleSave}>
                                     <ListItemIcon><SaveIcon /></ListItemIcon>
                                     <ListItemText>Save</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={handleMoreClose}>
+                                <MenuItem onClick={handleMoreClose} disabled={true}>
                                     <ListItemIcon><IosShareIcon /></ListItemIcon>
                                     <ListItemText>Share</ListItemText>
                                 </MenuItem>
@@ -178,7 +265,24 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                         </ButtonGroup>
                 }
             />
-            <HttpHighlighter httpResponse={exchange.response} wordWrap={wordWrap} />
+            {rerunInFlight && <Box padding='10px 10px 0px 10px'><LinearProgress color='primary' /></Box>}
+            
+            {/* {showRequest && <HttpHighlighter requestOrResponse={exchangeState.request} wordWrap={wordWrap} />} */}
+            
+            <Box sx={{ padding: '15px 15px 10px 20px'}} >
+            {
+                showRequest ? 
+                    <Stack>
+                        <Typography>Request</Typography>
+                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.request} wordWrap={wordWrap} /></Box>
+                        <Divider/>
+                        <Typography pt={'15px'}>Response</Typography>
+                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.response} wordWrap={wordWrap} /></Box>
+                    </Stack>
+                    :
+                    <HttpHighlighter requestOrResponse={exchangeState.response} wordWrap={wordWrap} />
+            }
+            </Box>
         </Card>
     )
 }

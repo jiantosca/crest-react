@@ -85,7 +85,7 @@ export const RequestBuilder = () => {
 
       const httpRequest = (event as CustomEvent<any>).detail as HttpRequest
       urlRef.current = (httpRequest.url) ? httpRequest.url : ''
-      headersRef.current = httpRequest.headers?.map(header => `${header.name}: ${header.value}`).join('\n') || ''
+      headersRef.current = httpRequest.unresolvedHeaders?.map(header => `${header.name}: ${header.value}`).join('\n') || ''
       bodyRef.current = httpRequest.body || ''
 
       //now we need to set the method and ensure we rerender. If the request has a different method than the current value then we'll get

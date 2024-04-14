@@ -35,9 +35,9 @@ export class AppSettings {
                 }
             }
             Storage.storeSettings(settings)
-            console.log('getSettings() - settings stored')
+            //console.log('getSettings() - settings stored')
         } else {
-            console.log('getSettings() - settings already exist')
+            //console.log('getSettings() - settings already exist')
         }
 
         return settings

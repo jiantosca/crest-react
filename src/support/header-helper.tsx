@@ -29,10 +29,6 @@ export class HeaderHelper {
         this.requestId = requestId
         this.showDialog = showDialog
     }
-    
-    getUnresolvedHeaders(): NameValuePair[] {
-        return this.headers
-    }
 
     async resolveHeaders(): Promise<NameValuePair[]> {
         
@@ -73,10 +69,10 @@ export class HeaderHelper {
      * for now this'll be fine.
      */
     private resolveOauthHeader(httpRequest: HttpRequest): Promise<NameValuePair> {
-        console.log("HeaderHelper.resolveOauthHeader TODO token caching and configurable timeout.");
+        console.log("HeaderHelper.resolveOauthHeader TODO token caching and configurable timeout.")
         const oauthTimout = 30000;
+        httpRequest.headers = httpRequest.unresolvedHeaders //no resoving headers for oauth
         return new Promise((resolve, reject) => {
-
             const tokenExchangeCompletionHandler = (exchange: HttpExchange) => {
                 //clear it out once we don't need it since request button comp can call getHttpExchangeHandler to
                 //abort it if needed. No need to abort it if it's already done so get rid of it.

@@ -134,7 +134,7 @@ export const RequestButton = (
      */
     const exchangeCompletionHandler = (httpExchange: HttpExchange) => {
       console.log('<RequestButton />.exchangeCompletionHandler', httpExchange)
-      const unresolvedHeaders = outerState.inFlightHeaderHelper?.getUnresolvedHeaders()
+
       resetUI()
 
       if (!RcUtils.isExtensionRuntime()) {
@@ -142,32 +142,16 @@ export const RequestButton = (
       }
 
       if (httpExchange.response.statusCode === 0) {
-        if (httpExchange.aborted) {
-          return
-        } else if (httpExchange.timedout) {
-          appContext.showDialog('Timed Out',
-            <Alert severity="warning">
-              <Typography component="div">The request timed out after {httpExchange.timeout} milliseconds.</Typography>
-            </Alert>)
-        } else {
-          appContext.showDialog('Network Error',
-            <Alert severity="error">
-              {/* component='div' so each typography is on a new line */}
-              <Typography component="div">No response from the server. Ensure your URL is correct.</Typography>
-              {httpExchange.request.url.startsWith('https') && <Typography component="div" pt={1}>This could also be due to SSL issues. You could add an exception in chrome if appropriate.</Typography>}
-            </Alert>)
-        }
+        RcUtils.showNoStatusCodeDialog(httpExchange, appContext)
         return
       }
       
+      httpExchange.request.isOAuth = RcUtils.isOauth(httpExchange.response)
+
       if (httpExchange.response.statusCode < 300) {
         Storage.storeUrl(httpRequest.url)
         Storage.storeHeaders(headerLines)
-        Storage.updateRequestHistory({
-          ...httpRequest,
-          isOAuth: RcUtils.isOauth(httpExchange.response),
-          headers: unresolvedHeaders ? unresolvedHeaders : []
-        })
+        Storage.updateRequestHistory(httpExchange.request)
       }
       // below causes rerender in the parent RequestBuilder because it's inside of the HttpExchangeContext.Provider (App.tsx)
       // but no biggie. main thing is we need this comp, and the HttpResponses inside of the HttpExchangeContext.Provider
@@ -245,6 +229,7 @@ export const RequestButton = (
       method: methodRef.current,
       url: urlRef.current,
       headers: resolvedHeaders,
+      unresolvedHeaders: headerNameValues,
       body: (['POST', 'PUT'].includes(methodRef.current) && bodyRef.current.trim()) ? 
         bodyRef.current.trim() : undefined
     }

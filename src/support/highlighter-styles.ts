@@ -41,7 +41,7 @@ export const darkModeCss = (wordWrap: boolean): { [key: string]: React.CSSProper
       "MozHyphens": "none",
       "msHyphens": "none",
       "hyphens": "none",
-      "padding": "1em",
+      // "padding": "1em", //jpi HttpResponseCard will do padding
       "margin": ".5em 0",
       "overflow": `${wordWrap ? "hidden" : "auto"}`,//jpi
       "background": `${background}` //jpi
@@ -84,7 +84,7 @@ export const darkModeCss = (wordWrap: boolean): { [key: string]: React.CSSProper
       "background": "#264F78"
     },
     ":not(pre) > code[class*=\"language-\"]": {
-      "padding": ".1em .3em",
+      // "padding": ".1em .3em", //jpi HttpResponseCard will do padding
       "borderRadius": ".3em",
       "color": "#db4c69",
       "background": "#1e1e1e"
@@ -333,7 +333,7 @@ export const lightModeCss = (wordWrap: boolean): { [key: string]: React.CSSPrope
       "MozHyphens": "none",
       "msHyphens": "none",
       "hyphens": "none",
-      "padding": "1em",
+      // "padding": "1em", //jpi HttpResponseCard will do padding
       "margin": ".5em 0",
       "overflow": `${wordWrap ? "hidden" : "auto"}`,//jpi
     },
@@ -391,7 +391,7 @@ export const lightModeCss = (wordWrap: boolean): { [key: string]: React.CSSPrope
     },
     ":not(pre) > code[class*=\"language-\"]": {
       "background": "#f5f2f0",
-      "padding": ".1em",
+      // "padding": ".1em", //jpi HttpResponseCard will do padding
       "borderRadius": ".3em",
       "whiteSpace": "normal"
     },

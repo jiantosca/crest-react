@@ -16,10 +16,9 @@ import {Storage} from '../support/storage'
  * so the user can edit and save requests. I'm not sure how I feel about this UX so I don't want to be refactoring the RequestBuilder comp
  * at this point to avoid the code duplication. Overall it's not too much duplication.
  */
-export const RequestEditor = ({ httpRequest, isOauth, setRequests}: 
+export const RequestEditor = ({ httpRequest, isOauth}: 
                               { httpRequest: HttpRequest, 
-                                isOauth?: boolean,
-                                setRequests?: React.Dispatch<React.SetStateAction<HttpRequest[]>>} ) => {
+                                isOauth?: boolean} ) => {
 
     const renderCounter = React.useRef(0)
     renderCounter.current++
@@ -31,16 +30,20 @@ export const RequestEditor = ({ httpRequest, isOauth, setRequests}:
         //methodRef.current = method
     }, [method])
 
-    const headers = (!httpRequest.headers) ? '' : httpRequest.headers.map((header) => `${header.name}: ${header.value}`).join('\n')
+    const unresolvedHeaders = (!httpRequest.unresolvedHeaders) ? '' : httpRequest.unresolvedHeaders.map((header) => `${header.name}: ${header.value}`).join('\n')
 
     const nameRef = React.useRef(httpRequest.name)
     const urlRef = React.useRef<string>(httpRequest.url)
-    const headersRef = React.useRef<string>(headers)
+    const headersRef = React.useRef<string>(unresolvedHeaders)
     const bodyRef = React.useRef<string>((httpRequest.body) ? httpRequest.body : '')
 
     const [problems, setProblems] = React.useState<React.ReactElement[]>([])
 
     const appContext = useApplicationContext()
+    
+    const isEdit = httpRequest.name ? true : false
+    console.log('isOauth: ', isOauth)
+    console.log('isEdit: ', isEdit)
 
     const handleSave = () => {
 
@@ -66,11 +69,6 @@ export const RequestEditor = ({ httpRequest, isOauth, setRequests}:
           }
           return nameValue
         }) : []
-
-        const isEdit = httpRequest.name ? true : false
-
-        console.log('isOauth: ', isOauth)
-        console.log('isEdit: ', isEdit)
 
         //could be savedRequests or oauths
         const httpRequestsFromStorage = (isOauth) ? Storage.listOAuths() : Storage.listHttpRequests()
@@ -116,7 +114,8 @@ export const RequestEditor = ({ httpRequest, isOauth, setRequests}:
             timestamp: httpRequest.timestamp,
             method: method,
             url: urlRef.current,
-            headers: headerNameValues,
+            headers: [],
+            unresolvedHeaders: headerNameValues,
             body: bodyRef.current
         }
 
@@ -133,7 +132,7 @@ export const RequestEditor = ({ httpRequest, isOauth, setRequests}:
             if(isEdit && nameRef.current !== httpRequest.name) {
                 const requests = Storage.listHttpRequests()
                 for(let i = 0; i < requests.length; i++) {
-                    const headers = requests[i].headers
+                    const headers = requests[i].unresolvedHeaders
                     for(let j = 0; j < headers.length; j++) {
                         if(headers[j].name === 'crest-oauth' && headers[j].value === httpRequest.name) {
                             headers[j].value = nameRef.current
@@ -144,11 +143,6 @@ export const RequestEditor = ({ httpRequest, isOauth, setRequests}:
             }
         } else {
             Storage.storeHttpRequests(httpRequestsFromStorage)
-        }
-        // setRequest not passed when saving request history item. But it is when updating or copying an oauth, setRequests is passed so that
-        // we can trigger a rerender of the oauth or saved requests tab.
-        if(setRequests) {
-            setRequests(httpRequestsFromStorage)
         }
         
         appContext.hideDialog()

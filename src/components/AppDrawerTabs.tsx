@@ -27,8 +27,8 @@ const toToolTip = (httpRequest: HttpRequest, includeDateInToolTip: boolean): Rea
             hour12: true
         }) : ''
 
-    const headers = (httpRequest.headers && httpRequest.headers.length > 0) ? (<Box pt={1}>{
-        httpRequest.headers.map((header, index) => (<Box key={index}>{header.name}: {header.value}</Box>))
+    const headers = (httpRequest.unresolvedHeaders && httpRequest.unresolvedHeaders.length > 0) ? (<Box pt={1}>{
+        httpRequest.unresolvedHeaders.map((header, index) => (<Box key={index}>{header.name}: {header.value}</Box>))
     }</Box>) : undefined
 
     return (
@@ -78,11 +78,6 @@ const HistoryTabContent = () => {
 
     const [requests, setRequests] = React.useState<HttpRequest[]>(Storage.listRequestHistory())
 
-    //this will be true when this component rerenders due to a new request completing.
-    if( requests.length !== Storage.listRequestHistory().length) {
-        setRequests(Storage.listRequestHistory())
-    }
-
     const appContext = useApplicationContext()
 
     const handleSave = (httpRequest: HttpRequest) => {
@@ -92,8 +87,19 @@ const HistoryTabContent = () => {
     const handleDelete = (httpRequest: HttpRequest) => {
         const filtered = Storage.listRequestHistory().filter(request => request.id !== httpRequest.id)
         Storage.storeRequestHistory(filtered)
-        setRequests(filtered)
     }
+
+    React.useEffect(() => {
+        const handleUpdate = (e: Event) => {
+          setRequests((e as CustomEvent).detail as HttpRequest[])
+        }
+        document.addEventListener(Storage.requestHistoryUpdateEventName, handleUpdate);
+    
+        // Cleanup
+        return () => {
+            document.removeEventListener(Storage.requestHistoryUpdateEventName, handleUpdate)
+        };
+      }, [])
 
     return (
         <List>
@@ -116,26 +122,37 @@ const HistoryTabContent = () => {
 
 const SavedTabContent = () => {
     const renderCounter = React.useRef(0)
-    console.log(`<BundlesTabContent /> rendered ${++renderCounter.current} times`)
+    console.log(`<SavedTabContent /> rendered ${++renderCounter.current} times`)
 
     const [requests, setRequests] = React.useState<HttpRequest[]>(Storage.listHttpRequests())
 
     const appContext = useApplicationContext()
 
     const handleEdit = (httpRequest: HttpRequest) => {
-        appContext.showDialog(`Editing '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequest} setRequests={setRequests}/>, false)
+        appContext.showDialog(`Editing '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequest} />, false)
     }
 
     const handleCopy = (httpRequest: HttpRequest) => {
         const httpRequestCopy = { ...httpRequest, name: '' }
-        appContext.showDialog(`Copying '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequestCopy} setRequests={setRequests}/>, false)
+        appContext.showDialog(`Copying '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequestCopy} />, false)
     }
 
     const handleDelete = (httpRequest: HttpRequest) => {
         const filtered = Storage.listHttpRequests().filter(request => request.name !== httpRequest.name)
         Storage.storeHttpRequests(filtered)
-        setRequests(filtered)
     }
+
+    React.useEffect(() => {
+        const handleUpdate = (e: Event) => {
+          setRequests((e as CustomEvent).detail as HttpRequest[])
+        }
+        document.addEventListener(Storage.savedRequestsUpdateEventName, handleUpdate);
+    
+        // Cleanup
+        return () => {
+            document.addEventListener(Storage.savedRequestsUpdateEventName, handleUpdate);
+        };
+      }, [])
 
     return (
         <List>
@@ -165,19 +182,30 @@ const OAuthTabContent = () => {
     const appContext = useApplicationContext()
 
     const handleEdit = (httpRequest: HttpRequest) => {
-        appContext.showDialog(`Editing '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequest} isOauth={true} setRequests={setRequests}/>, false)
+        appContext.showDialog(`Editing '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequest} isOauth={true} />, false)
     }
     
     const handleCopy = (httpRequest: HttpRequest) => {
         const httpRequestCopy = { ...httpRequest, name: '' }
-        appContext.showDialog(`Copying '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequestCopy} isOauth={true} setRequests={setRequests}/>, false)
+        appContext.showDialog(`Copying '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequestCopy} isOauth={true} />, false)
     }
 
     const handleDelete = (httpRequest: HttpRequest) => {
         const filtered = Storage.listOAuths().filter(request => request.name !== httpRequest.name)
         Storage.storeOAuths(filtered)
-        setRequests(filtered)
     }
+
+    React.useEffect(() => {
+        const handleUpdate = (e: Event) => {
+          setRequests((e as CustomEvent).detail as HttpRequest[])
+        }
+        document.addEventListener(Storage.oauthsUpdateEventName, handleUpdate);
+    
+        // Cleanup
+        return () => {
+            document.addEventListener(Storage.oauthsUpdateEventName, handleUpdate);
+        };
+      }, [])
 
     return (
         <List>
@@ -208,7 +236,7 @@ const HttpRequestListItem = ({ request, displayText, wordWrap, includeDateInTool
                                buttons: React.ReactNode[]}) => {
 
     const [isHovered, setIsHovered] = React.useState(false)
-    const [isTooltipOpen, setIsTooltipOpen] = React.useState(false)
+    //const [isTooltipOpen, setIsTooltipOpen] = React.useState(false)
 
     const buttonBox =
         <Box display="flex" justifyContent="space-between">
@@ -218,12 +246,12 @@ const HttpRequestListItem = ({ request, displayText, wordWrap, includeDateInTool
                 <Tooltip key='read-more' placement='right'
                     // we'll let button events control state 'cause on click i want to hide tooltip. By default it stays open
                     // while hovering over the button even after click.
-                    open={isTooltipOpen}
+                    // open={isTooltipOpen}
                     // onOpen={() => setIsTooltipOpen(true)}
                     // onClose={() => setIsTooltipOpen(false)}
                     // don't need below since button controlling state.
-                    // enterDelay={0}
-                    // leaveDelay={1000}
+                    enterDelay={300}
+                    leaveDelay={300}
                     title={
                         // make the component='div' so we don't get warning below, by default it's a <p>
                         // Warning: validateDOMNesting(...): <div> cannot appear as a descendant of <p>.
@@ -233,10 +261,11 @@ const HttpRequestListItem = ({ request, displayText, wordWrap, includeDateInTool
                     <IconButton key='load' size='small'
                         onClick={() => {
                             document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: request }))
-                            setTimeout(() => setIsTooltipOpen(false), 250)
+                            //setTimeout(() => setIsTooltipOpen(false), 250)
                         }}
-                        onMouseEnter={() => setIsTooltipOpen(true)}
-                        onMouseLeave={() => setIsTooltipOpen(false)}
+
+                        // onMouseEnter={() => setIsTooltipOpen(true)}
+                        // onMouseLeave={() => setIsTooltipOpen(false)}
 
                     >
                         <PublishIcon />

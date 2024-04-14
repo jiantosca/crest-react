@@ -1,32 +1,33 @@
 import * as React from 'react';
 import { useApplicationContext } from '../support/react-contexts';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { HttpResponse, NameValuePair } from '../support/http-exchange';
+import { HttpResponse, HttpRequest, NameValuePair } from '../support/http-exchange';
 import { darkModeCss, lightModeCss } from "../support/highlighter-styles";
 import { parse, stringify } from 'lossless-json';
 import { AppSettings } from '../support/settings';
 
+
 export const HttpHighlighter = (
-    { httpResponse, wordWrap }: { httpResponse: HttpResponse, wordWrap: boolean }) => {
+    { requestOrResponse, wordWrap }: { requestOrResponse: HttpRequest | HttpResponse, wordWrap: boolean }) => {
 
     const renderCounter = React.useRef(0)
     console.log(`<HttpHighlighter /> rendered ${++renderCounter.current} times`)
+    let body = requestOrResponse.body || ''
+    // when false we never show line numbers or highlight the response. Both of inject tons of stuff into the dom
+    // making some thing sluggish. TODO i was using contentLength on HttpResponse to determine if we should pretty print
+    // but can prolly remove that now that I'm using Blob.size to support HttpRequest in addition to HttpResponse now
+    const highlight = new Blob([body]).size < AppSettings.getPrettyPrintBytesLimit()
 
-    let body = prettyPrint(httpResponse.body || '', httpResponse.headers)
+    body = prettyPrint(body, requestOrResponse.headers)
 
     let headersAndBody: string =
-        httpResponse.headers.map(
+    requestOrResponse.headers.map(
             header => `${header.name}: ${header.value}\n`)
-            .join('') + '\n';
+            .join('')
 
     if (body) {
-        headersAndBody += body;
+        headersAndBody += '\n' + body;
     }
-
-    // when false we never show line numbers or highlight the response. Both of inject tons of stuff into the dom
-    // making some thing sluggish
-    const highlight = httpResponse.contentLength < AppSettings.getPrettyPrintBytesLimit()
-
 
     const drawerState = useApplicationContext()
 

@@ -1,6 +1,7 @@
 //const chromeStorage = (chrome.storage) ? true : false;
 
 import { HttpRequest } from "./http-exchange"
+import { RcUtils } from "./rest-client-utils"
 import { AppSettings, SettingsType } from "./settings"
 
 /**
@@ -25,6 +26,10 @@ export class Storage {
             return Storage.Keys.listKeys().includes(key)
         }
     }
+    
+    static oauthsUpdateEventName = `${Storage.Keys.oauths}Update`
+    static savedRequestsUpdateEventName = `${Storage.Keys.savedRequests}Update`
+    static requestHistoryUpdateEventName = `${Storage.Keys.requestHistory}Update`
 
     static listUrls(): string[] {
         const urls = localStorage.getItem(Storage.Keys.urlHistory)
@@ -73,11 +78,13 @@ export class Storage {
     }
     
     static storeOAuths(oauths: HttpRequest[]): void {
-        localStorage.setItem(Storage.Keys.oauths, JSON.stringify(oauths));
+        localStorage.setItem(Storage.Keys.oauths, JSON.stringify(oauths))
+        document.dispatchEvent(new CustomEvent(Storage.oauthsUpdateEventName, {detail: oauths}))
+
     }
     
     static listHttpRequests(): HttpRequest[] {
-        const bundles = localStorage.getItem(Storage.Keys.savedRequests);
+        const bundles = localStorage.getItem(Storage.Keys.savedRequests)
         return bundles ? JSON.parse(bundles) : [];
     }
     
@@ -87,11 +94,12 @@ export class Storage {
     }
 
     static storeHttpRequests(httpRequests: HttpRequest[]): void {
-        localStorage.setItem(Storage.Keys.savedRequests, JSON.stringify(httpRequests));
+        localStorage.setItem(Storage.Keys.savedRequests, JSON.stringify(httpRequests))
+        document.dispatchEvent(new CustomEvent(Storage.savedRequestsUpdateEventName, {detail: httpRequests}))
     }
 
     static listRequestHistory(): HttpRequest[] {
-        const requestHistory = localStorage.getItem(Storage.Keys.requestHistory);
+        const requestHistory = localStorage.getItem(Storage.Keys.requestHistory)
         return requestHistory ? JSON.parse(requestHistory) : []
     }
 
@@ -100,16 +108,21 @@ export class Storage {
             return;
         }
         const requestHistory = Storage.listRequestHistory()
-        requestHistory.unshift(httpRequest)
+        const filteredRequestHistory = requestHistory.filter(storedRequest => !RcUtils.isHttpRequestsEqual(storedRequest, httpRequest))
+        filteredRequestHistory.unshift(httpRequest)
         const limit = AppSettings.get().historyLimit
-        if (requestHistory.length > limit) {
-            requestHistory.splice(limit)
+        if (filteredRequestHistory.length > limit) {
+            filteredRequestHistory.splice(limit)
         }
-        localStorage.setItem(Storage.Keys.requestHistory, JSON.stringify(requestHistory))
+
+        localStorage.setItem(Storage.Keys.requestHistory, JSON.stringify(filteredRequestHistory))
+        
+        document.dispatchEvent(new CustomEvent(Storage.requestHistoryUpdateEventName, {detail: filteredRequestHistory}))
     }
 
     static storeRequestHistory(requestHistory: HttpRequest[]): void {
         localStorage.setItem(Storage.Keys.requestHistory, JSON.stringify(requestHistory));
+        document.dispatchEvent(new CustomEvent(Storage.requestHistoryUpdateEventName, {detail: requestHistory}))
     }
 
     static getSettings(): SettingsType | null {
