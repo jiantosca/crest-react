@@ -108,6 +108,7 @@ export class Storage {
             return;
         }
         const requestHistory = Storage.listRequestHistory()
+        //remove duplicate if applicable from storeage before adding new one
         const filteredRequestHistory = requestHistory.filter(storedRequest => !RcUtils.isHttpRequestsEqual(storedRequest, httpRequest))
         filteredRequestHistory.unshift(httpRequest)
         const limit = AppSettings.get().historyLimit

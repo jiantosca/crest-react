@@ -20,6 +20,7 @@ import { HeaderHelper } from '../support/header-helper';
 import { useApplicationContext } from '../support/react-contexts'
 import { loadRequestEventType } from './RequestBuilder'
 import { RequestEditor } from './RequestEditor';
+import { Storage } from '../support/storage'
 
 export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpExchange, deleteCallBack: (id: string) => void }) => {
     const renderCounter = React.useRef(0)
@@ -103,7 +104,8 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
             } else {
                 if (!RcUtils.isExtensionRuntime()) {
                     exchange.response.headers.push({ name: 'headers-suppressed', value: 'because not running as extension (see fetch & Access-Control-Expose-Headers)' })
-                  }                
+                  }
+                Storage.updateRequestHistory(exchange.request)        
                 setExchangeState(exchange)
             }
             
@@ -244,10 +246,6 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                                     <ListItemIcon><HttpIcon /></ListItemIcon>
                                     <ListItemText>Request</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={toggleHeadersShowing} disabled={true}>
-                                    <ListItemIcon>{headersShowing ? (<RemoveCircleOutlineIcon />) : (<AddCircleOutlineIcon />)}</ListItemIcon>
-                                    <ListItemText>Headers</ListItemText>
-                                </MenuItem>
                                 <MenuItem onClick={handleLoad}>
                                     <ListItemIcon><PublishIcon /></ListItemIcon>
                                     <ListItemText>Load</ListItemText>
@@ -256,6 +254,10 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                                     <ListItemIcon><SaveIcon /></ListItemIcon>
                                     <ListItemText>Save</ListItemText>
                                 </MenuItem>
+                                <MenuItem onClick={toggleHeadersShowing} disabled={true}>
+                                    <ListItemIcon>{headersShowing ? (<RemoveCircleOutlineIcon />) : (<AddCircleOutlineIcon />)}</ListItemIcon>
+                                    <ListItemText>Headers</ListItemText>
+                                </MenuItem> 
                                 <MenuItem onClick={handleMoreClose} disabled={true}>
                                     <ListItemIcon><IosShareIcon /></ListItemIcon>
                                     <ListItemText>Share</ListItemText>

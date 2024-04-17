@@ -2,24 +2,16 @@ import * as React from 'react'
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import WrapTextIcon from '@mui/icons-material/WrapText';
-import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
-import InputOutlinedIcon from '@mui/icons-material/InputOutlined';
-import { Alert, Box, Button, Stack, Switch, TextField, Collapse } from '@mui/material';
+import { Alert, Box, Button, Switch, TextField, Collapse } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
-import { useTheme } from '@mui/material/styles';
 import { useApplicationContext } from '../support/react-contexts';
 import { RcUtils } from '../support/rest-client-utils';
-import { loadRequestEventType } from './RequestBuilder'
-import { HttpRequest } from '../support/http-exchange';
 import { AppSettings } from '../support/settings';
 import { AppDrawerTabs } from './AppDrawerTabs';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -30,18 +22,8 @@ export const AppDrawer = () => {
     const renderCounter = React.useRef(0)
     console.log(`<AppDrawer /> rendered ${++renderCounter.current} times`)
 
-    const theme = useTheme();
     const appState = useApplicationContext()
     const padLeft = 2;
-
-    /**
-     * Resets the request builder to a clean slate. We just leverage the load request stuff passing in
-     * a request causing defaults to get set.
-     */
-    const clearRequestBuilder = () => {
-        const httpRequest = {} as HttpRequest
-        document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: httpRequest }))
-    }
 
     // unlike darkmode toggle that uses the more global drawerState that has darkMode attribute, we'll just use a local state for this. For 
     // word wrap we don't want to trigger app wide rerender, we just want to update settings that any future responses would use. Existing
@@ -109,25 +91,6 @@ export const AppDrawer = () => {
             open={appState.isDrawerOpen}
             transitionDuration={0}
         >
-            {/* <DrawerHeader> */}
-            <Stack direction='row' pt={2}>
-                <ListItemButton sx={{ pl: padLeft }} onClick={clearRequestBuilder}>
-                    <ListItemIcon><CleaningServicesOutlinedIcon /></ListItemIcon>
-                    <ListItemText primary='Clear' />
-                </ListItemButton>
-                <Box display="flex" alignItems="center">
-                    <IconButton onClick={appState.toggleDrawer} size='small'>
-                        {theme.direction === 'ltr' ? <ChevronLeftIcon/> :  <ChevronRightIcon /> }
-                    </IconButton>
-                </Box>
-            </Stack>
-            <ListItem key='Load' disablePadding>
-                <ListItemButton disabled sx={{ pl: padLeft }}>
-                    <ListItemIcon><InputOutlinedIcon /></ListItemIcon>
-                    <ListItemText primary='Load' />
-                </ListItemButton>
-            </ListItem>
-            <Divider />
 
             <AppDrawerTabs />
 

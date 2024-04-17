@@ -2,7 +2,8 @@ import * as React from 'react'
 import { RcUtils } from '../support/rest-client-utils'
 import {
   Paper, Stack, InputLabel, MenuItem, Select, FormControl,
-  TextField, IconButton, Box, LinearProgress
+  TextField, IconButton, Box, LinearProgress, Menu, MenuList,
+  ListItemIcon, ListItemText
 }
   from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -11,7 +12,10 @@ import { RequestHeaderAutocomplete } from './RequestHeaderAutocomplete'
 import { RequestButton, requestSentEventType, requestCompleteEventType } from './RequestButton'
 import { HttpRequest } from '../support/http-exchange'
 import { UrlAutoComplete } from './RequestUrlAutocomplete'
-
+import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined'
+import InputOutlinedIcon from '@mui/icons-material/InputOutlined'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 export const loadRequestEventType = 'loadRequest'
 
 /**
@@ -68,8 +72,6 @@ export const RequestBuilder = () => {
   const headerKeyRef = React.useRef<string>('headerKey')
   const bodyKeyRef = React.useRef<string>('bodyKey')
   
-  const appContext = useApplicationContext()
-
   // we never use the forcedRender state var, but we need to set it to force a rerender
   // eslint-disable-next-line
   const [forcedRender, setForcedRender] = React.useState<number>(0)
@@ -115,7 +117,7 @@ export const RequestBuilder = () => {
       sx={{ borderRadius: '0px 0px 4px 4px', padding: '20px 20px 0px 20px', margin: '0px 20px 20px 20px' }}
     >
       <Stack direction='row' spacing={1.5}>
-        {!appContext.isDrawerOpen && <BurgerMenu />}
+        <MoreOptionsBurgerMenu />
         <MethodDropDown methodValue={method} setMethodValue={setMethod} />
         <UrlAutoComplete key={urlKeyRef.current} urlRef={urlRef} />
         <RequestButton methodRef={methodRef} urlRef={urlRef} headersRef={headersRef} bodyRef={bodyRef} />
@@ -124,21 +126,40 @@ export const RequestBuilder = () => {
         <RequestHeaderAutocomplete key={headerKeyRef.current} headersRef={headersRef}/>
       </Stack>
       <Stack direction='column' spacing={1.5} marginTop={2}
-        sx={{ display: bodyDisplay }}
-      >
+        sx={{ display: bodyDisplay }}>
         <BodyInput key={bodyKeyRef.current} bodyRef={bodyRef} />
       </Stack>
       <ProgressBar />
     </Paper>
   )
 }
-
-const BurgerMenu = () => {
+const MoreOptionsBurgerMenu = () => {
   const renderCounter = React.useRef(0)
-  console.log(`<BurgerMenu /> rendered ${++renderCounter.current} times`)
+  console.log(`<MoreOptionsBurgerMenu /> rendered ${++renderCounter.current} times`)
 
-  const appState = useApplicationContext()//custom hook!
+  const [moreAnchorEl, setMoreAnchorEl] = React.useState<null | HTMLElement>(null)
+  const isMoreOpen = Boolean(moreAnchorEl)
+  const handleMoreClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      setMoreAnchorEl(event.currentTarget)
+  }
+  const handleMoreClose = () => {
+      setMoreAnchorEl(null)
+  }
+  
+  const appState = useApplicationContext()
 
+  const handleDrawerToggle = () => {
+    appState.toggleDrawer()
+    handleMoreClose()
+  }
+
+  const clearRequestBuilder = () => {
+    window.setTimeout(() => {
+      document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: {} as HttpRequest }))
+    }, 100)
+    handleMoreClose()
+}  
+  
   return (
     <Box
       sx={{ display: 'flex', border: '0px solid black' }}
@@ -146,10 +167,37 @@ const BurgerMenu = () => {
       alignItems='flex-end'>
       <IconButton
         size='small'
-        id='burger-button'
-        onClick={appState.toggleDrawer}>
+        id='more-button'
+        onClick={handleMoreClick}
+        aria-controls={isMoreOpen ? 'more-menu' : undefined}
+        aria-haspopup='true'
+        aria-expanded={isMoreOpen ? 'true' : undefined}>
         <MenuIcon />
       </IconButton>
+      <Menu id='more-menu'
+        anchorEl={moreAnchorEl}
+        open={isMoreOpen}
+        onClose={handleMoreClose}
+        // Checkout popover link below for more details on how to position the menu
+        // https://mui.com/material-ui/react-popover/
+        // anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        // transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+        <MenuList>
+          <MenuItem onClick={clearRequestBuilder}>
+            <ListItemIcon><CleaningServicesOutlinedIcon/></ListItemIcon>
+            <ListItemText primary='Clear' />
+          </MenuItem>
+          <MenuItem onClick={handleDrawerToggle}>
+            <ListItemIcon>{appState.isDrawerOpen ? <ChevronLeftIcon/> :  <ChevronRightIcon /> }</ListItemIcon>
+            <ListItemText primary='Drawer' />
+          </MenuItem>          
+          <MenuItem onClick={handleMoreClose} disabled={true}>
+            <ListItemIcon><InputOutlinedIcon /></ListItemIcon>
+            <ListItemText primary='Load' />
+          </MenuItem>
+        </MenuList>
+      </Menu>
     </Box>
   )
 }
