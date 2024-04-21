@@ -56,16 +56,17 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
         setLocked(!locked)
     }
 
-    const [headersShowing, setHeadersShowing] = React.useState<boolean>(false)
-    const toggleHeadersShowing = () => {
-        setHeadersShowing(!headersShowing)
+    const [minimalHeaders, setMinimalHeaders] = React.useState<boolean>(false)
+    const toggleMinimalHeaders = () => {
         handleMoreClose()
+        setMinimalHeaders(!minimalHeaders)
+        
     }
 
     const [showRequest, setShowRequest] = React.useState<boolean>(false)
     const toggleShowRequest = () => {
         if(exchange.request.headers.length === 0 && !exchange.request.body) {
-            appContext.showDialog(' ', <Alert severity="info">The request has no headers & body to show.</Alert>)
+            appContext.showDialog(' ', <Alert severity="info">The request has no headers or body to show.</Alert>)
         } else {
             setShowRequest(!showRequest)
         }
@@ -132,14 +133,6 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
             setRerunInFlight(false)
             return;
           }
-
-        
-        // setTimeout(() => {
-        //     setRerunInFlight(false)
-        // } , 1500)
-
-        // console.log({...exchange})
-        // console.log('rerun')
     }
     
     const iconSize = RcUtils.iconButtonSize
@@ -243,7 +236,8 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                         >
                             <MenuList>
                                 <MenuItem onClick={toggleShowRequest}>
-                                    <ListItemIcon><HttpIcon /></ListItemIcon>
+                                    {/* <ListItemIcon><HttpIcon /></ListItemIcon> */}
+                                    <ListItemIcon>{showRequest ? (<RemoveCircleOutlineIcon />) : (<AddCircleOutlineIcon />)}</ListItemIcon>
                                     <ListItemText>Request</ListItemText>
                                 </MenuItem>
                                 <MenuItem onClick={handleLoad}>
@@ -254,8 +248,8 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                                     <ListItemIcon><SaveIcon /></ListItemIcon>
                                     <ListItemText>Save</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={toggleHeadersShowing} disabled={true}>
-                                    <ListItemIcon>{headersShowing ? (<RemoveCircleOutlineIcon />) : (<AddCircleOutlineIcon />)}</ListItemIcon>
+                                <MenuItem onClick={toggleMinimalHeaders} disabled={false}>
+                                    <ListItemIcon>{minimalHeaders ? (<AddCircleOutlineIcon />) : (<RemoveCircleOutlineIcon />)}</ListItemIcon>
                                     <ListItemText>Headers</ListItemText>
                                 </MenuItem> 
                                 <MenuItem onClick={handleMoreClose} disabled={true}>
@@ -276,13 +270,13 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                 showRequest ? 
                     <Stack>
                         <Typography>Request</Typography>
-                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.request} wordWrap={wordWrap} /></Box>
+                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.request} wordWrap={wordWrap} minimalHeaders={minimalHeaders}/></Box>
                         <Divider/>
                         <Typography pt={'15px'}>Response</Typography>
-                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.response} wordWrap={wordWrap} /></Box>
+                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.response} wordWrap={wordWrap} minimalHeaders={minimalHeaders}/></Box>
                     </Stack>
                     :
-                    <HttpHighlighter requestOrResponse={exchangeState.response} wordWrap={wordWrap} />
+                    <HttpHighlighter requestOrResponse={exchangeState.response} wordWrap={wordWrap} minimalHeaders={minimalHeaders}/>
             }
             </Box>
         </Card>

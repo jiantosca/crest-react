@@ -8,7 +8,7 @@ import { AppSettings } from '../support/settings';
 
 
 export const HttpHighlighter = (
-    { requestOrResponse, wordWrap }: { requestOrResponse: HttpRequest | HttpResponse, wordWrap: boolean }) => {
+    { requestOrResponse, wordWrap, minimalHeaders }: { requestOrResponse: HttpRequest | HttpResponse, wordWrap: boolean, minimalHeaders: boolean }) => {
 
     const renderCounter = React.useRef(0)
     console.log(`<HttpHighlighter /> rendered ${++renderCounter.current} times`)
@@ -20,21 +20,21 @@ export const HttpHighlighter = (
 
     body = prettyPrint(body, requestOrResponse.headers)
 
-    let headersAndBody: string =
-    requestOrResponse.headers.map(
+    const headers = (minimalHeaders) ?
+        toMinimalHeaders(requestOrResponse.headers)
+        : requestOrResponse.headers.map(
             header => `${header.name}: ${header.value}\n`)
             .join('')
 
-    if (body) {
-        headersAndBody += '\n' + body;
-    }
 
-    const drawerState = useApplicationContext()
+    const headersAndBody = (body) ? headers + '\n' + body : headers
+
+    const appContext = useApplicationContext()
 
     return (
         <SyntaxHighlighter
             language={(highlight) ? 'http': 'none'}
-            style={drawerState.isDarkMode ? darkModeCss(wordWrap) : lightModeCss(wordWrap)}
+            style={appContext.isDarkMode ? darkModeCss(wordWrap) : lightModeCss(wordWrap)}
             showLineNumbers={highlight && !wordWrap}
             wrapLongLines={wordWrap}
         >
@@ -42,6 +42,18 @@ export const HttpHighlighter = (
             {headersAndBody}
         </SyntaxHighlighter>
     )
+}
+
+const toMinimalHeaders = (headers: NameValuePair[]): string => {
+    // might have two since we have a hack to mime type param on the content-type header. In this case there would be 
+    // content-type, and content-type-original
+    const contentTypeHeaders: string[] = headers.filter(
+        header => header.name.trim().toLowerCase().startsWith('content-type'))
+        .map(header => `${header.name}: ${header.value}\n`)
+
+    return [`...${headers.length - contentTypeHeaders.length} hidden headers...\n`,
+             ...contentTypeHeaders]
+             .join('')
 }
 
 const jsonMediaReg = /[/|+]json/
