@@ -234,40 +234,34 @@ const HttpRequestListItem = ({ request, displayText, wordWrap, includeDateInTool
                                includeDateInToolTip: boolean,
                                deleteButton: React.ReactNode,
                                buttons: React.ReactNode[]}) => {
+    
+    const renderCounter = React.useRef(0)
+    console.log(`<HttpRequestListItem /> rendered ${++renderCounter.current} times`)
 
     const [isHovered, setIsHovered] = React.useState(false)
-    //const [isTooltipOpen, setIsTooltipOpen] = React.useState(false)
+
+    const populatedToolTipTitle = <Typography component='div' sx={{ fontSize: '1.25em' }}>{toToolTip(request, includeDateInToolTip)}</Typography>
+    
+    const [toolTipTitle, setToolTipTitle] = React.useState<React.ReactNode>(populatedToolTipTitle)
 
     const buttonBox =
         <Box display="flex" justifyContent="space-between">
             {deleteButton}
             <Box>
                 {buttons}
+                {/* Customized how tooltip is displayed a little bit. So hovering the load button will show the tooltip so user can peek at the request before loading it. But onece 
+                the user clicks, the tool tip is just in the way so we'll hide it.  We set the tooltip to null causingn it to dissapear, then on mouse leave we can set the tooltip
+                back to the way it was. I'm using a timeout because if cursor moving real slow the tool tip will show real quick during the onMouseLeave even. */}
                 <Tooltip key='read-more' placement='right'
-                    // we'll let button events control state 'cause on click i want to hide tooltip. By default it stays open
-                    // while hovering over the button even after click.
-                    // open={isTooltipOpen}
-                    // onOpen={() => setIsTooltipOpen(true)}
-                    // onClose={() => setIsTooltipOpen(false)}
-                    // don't need below since button controlling state.
                     enterDelay={300}
                     leaveDelay={300}
-                    title={
-                        // make the component='div' so we don't get warning below, by default it's a <p>
-                        // Warning: validateDOMNesting(...): <div> cannot appear as a descendant of <p>.
-                        <Typography component='div' sx={{ fontSize: '1.25em' }}>{toToolTip(request, includeDateInToolTip)}</Typography>
-                    }
-                >
+                    title={toolTipTitle}>
                     <IconButton key='load' size='small'
                         onClick={() => {
+                            setToolTipTitle(null)
                             document.dispatchEvent(new CustomEvent(loadRequestEventType, { detail: request }))
-                            //setTimeout(() => setIsTooltipOpen(false), 250)
                         }}
-
-                        // onMouseEnter={() => setIsTooltipOpen(true)}
-                        // onMouseLeave={() => setIsTooltipOpen(false)}
-
-                    >
+                        onMouseLeave={() => setTimeout(() => setToolTipTitle(populatedToolTipTitle), 500)}>
                         <PublishIcon />
                     </IconButton>
                 </Tooltip>
