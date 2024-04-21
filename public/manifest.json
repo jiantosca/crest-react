@@ -1,7 +1,7 @@
 {
-  "name": "Rest Client",
+  "name": "cREST Client",
   
-  "version": "0.0.1",
+  "version": "4.0.1",
   
   "manifest_version": 3,
   "description": "RESTful service tester.",
@@ -20,6 +20,6 @@
     "service_worker": "serviceWorker/background.js",
     "type": "module"
   },
-  "permissions": ["management", "cookies", "storage", "unlimitedStorage"],
+  "permissions": ["management", "cookies"],
   "host_permissions": ["http://*/*", "https://*/*", "file:///*/*"]
 }
