@@ -1,15 +1,15 @@
 {
   "name": "cREST Client",
   
-  "version": "4.0.1",
+  "version": "4.0.2",
   
   "manifest_version": 3,
   "description": "RESTful service tester.",
     "icons": {
-    "16": "images/icon.png",
-    "32": "images/icon.png",
-    "48": "images/icon.png",
-    "128": "images/icon.png"
+    "16": "images/icon16.png",
+    "32": "images/icon32.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
   },
   
   "action": {
@@ -20,6 +20,6 @@
     "service_worker": "serviceWorker/background.js",
     "type": "module"
   },
-  "permissions": ["management", "cookies"],
-  "host_permissions": ["http://*/*", "https://*/*", "file:///*/*"]
+  "permissions": ["management"],
+  "host_permissions": ["http://*/*", "https://*/*"]
 }

@@ -2,7 +2,7 @@
 /* global chrome */
 
 /**
- * I can't see to compile this along side all the other react stuff because things get packed
+ * I can't seem to compile this along side all the other react stuff because things get packed
  * up and bublded into single js files and I can't refer to this file in the manifest.json for
  * the plugin. So i give it it's own folder and build it separately via package.json 
  * build script update. 
