@@ -1,8 +1,9 @@
-import { Stack } from '@mui/material'
+import { Stack, Typography } from '@mui/material'
 import * as React from 'react'
 import { HttpResponseCard } from './HttpResponseCard'
 import { useApplicationContext, useHttpExchangeContext } from '../support/react-contexts';
-
+import { useScrollbarVisibleForWindow } from '../support/scrollbar-hooks';
+import { RcUtils } from '../support/rest-client-utils';
 /**
  * This component is responsible for rendering the http responses via HttpResponseCard. It's basically a kind
  * of wrapper for all responses.
@@ -64,19 +65,41 @@ export const HttpResponses = () => {
     }
    
     /**
-     * Start code supporting the drawer state and scrollbar visibility so we cant figure out the width of 
-     * the responses section.
+     * So width offet can get a little weird. We need to include the drawer width which is simple enough, but things get odd when trying to 
+     * consider the vertical scroll bar which isn't so straight forward. When we have enough responses we'll have a vertical scrollbar adds
+     * 15px worth of padding **in some cases** which is frustrating as heck. So some responses have extra wide data which will cause the 
+     * response to be wider than don't exceed the viewable area. In this case we need to add the 15 px extra offset. Now even when the response
+     * is small and doesn't exceed the viewable area we can still add the 15px offset w/out any negative impact even though it's not needed. So
+     * best just to always add it when we know scrollbar is visible. 
+     * 
+     * NOTE: I sure hope windows doesn't have a different scrollbar width than mac.
+     * 
+     * TODO: There must be a better way to force the response card to fit within the viewable area without having to worry about the scrollbar
+     * and calculating the width offset using stuff like "maxWidth: `calc(100vw - ${widthOffset}px)` }}"
      */
 
+    //let widthOffset = appState.isDrawerOpen ? appState.drawerWidth + 55 : 55
+    const isScrollbarVisible = useScrollbarVisibleForWindow(renderCounter.current)
 
-    let widthOffset = appState.isDrawerOpen ? appState.drawerWidth + 55 : 55
+    //let's just be explicit here. First define the numbers we need...
+    const margin = 20
+    const marginOffset = margin * 2
+    const scrollbarOffset = isScrollbarVisible ? 15 : 0
+
+    const offset = appState.isDrawerOpen ? 
+            marginOffset + scrollbarOffset + appState.drawerWidth
+            : 
+            marginOffset + scrollbarOffset
 
     return (
         <Stack rowGap={2.5} marginBottom={5}
-            sx={{ padding: '0px', ml: '20px', mr: '20px', maxWidth: `calc(100vw - ${widthOffset}px)` }}>
+            sx={{ padding: '0px', ml: `${margin}px`, mr: `${margin}px`, maxWidth: `calc(100vw - ${offset}px)` }}>
             {/* <MyAutoComplete />
             <MyAutoComplete3 /> */}
             {responses}
+            <Typography pl={2} variant='caption' color='gray'>
+              {RcUtils.isExtensionRuntime() ? `v${chrome.runtime.getManifest().version}` : 'v.local.server'}
+            </Typography>
         </Stack>
     )
 }
