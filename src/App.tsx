@@ -43,14 +43,6 @@ function App() {
   const renderCounter = React.useRef(0)
   console.log(`<App /> rendered ${++renderCounter.current} times`)
 
-  //Dark Mode!! https://mui.com/material-ui/customization/dark-mode/
-  // pretty big headache to use media query *and* toggle in the ui. For now
-  // we'll default to dark mode and ignore system prefs. User can just 
-  // use toggle in ui to change. Maybe we can use local storage that is 
-  // initially set with media query, then after that everythign is driven
-  // from UI toggle switch.
-  // const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
-
   const [httpExchangeHolder, setHttpExchangeHolder] = React.useState<HttpExchangeHolder>({value:undefined})
   
   const [appState, setAppState] = React.useState<Application>({
@@ -101,9 +93,23 @@ function App() {
   });
 
   React.useEffect(() => {
-    console.log('<App /> - init stuff goes in here when needed.')
-    // setupTestData()
-  }, [])
+    //other tabs can update settings that impact the ui...  When 'settings' is written to storage, an event will be triggered
+    //in all tabs of the ext except for the one originating the event. By setting appState wel'll trigger a rerender of the ui
+    // updating drawer and dark mode if need be, as well as rerendering the settings section in the drawer keeping it's values
+    // in sync across all tabs.
+    const syncUiWithSettings = (e: StorageEvent) => {
+      const settings = AppSettings.get()
+      if( e.key === 'settings') {
+            setAppState({ ...appState, 
+              isDrawerOpen: settings.isDrawerOpen,
+              isDarkMode: settings.isDarkMode})
+      }
+    }
+    window.addEventListener('storage', syncUiWithSettings)
+    return () => {
+      window.removeEventListener('storage', syncUiWithSettings)
+    }
+  }, [appState])
 
   return (
     
@@ -119,7 +125,7 @@ function App() {
                 <RequestBuilder />
                 <HttpResponses />
               </HttpExchangeContext.Provider>
-              {/* {devMode && <DevNotes />} */}
+              {devMode && <DevNotes />}
           </Main>
           <AppDialog />
         </ApplicationContext.Provider>

@@ -6,6 +6,7 @@ export type SettingsType = {
     historyLimit: number
     isDarkMode: boolean
     isDrawerOpen: boolean
+    isSettingsOpen: boolean
     response: {
         highlightBytesLimit: number
         isWordWrap: boolean
@@ -29,6 +30,7 @@ export class AppSettings {
                 historyLimit: 50,
                 isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
                 isDrawerOpen: false,
+                isSettingsOpen: false,
                 response: {
                     highlightBytesLimit: 160000,
                     isWordWrap: false
@@ -71,6 +73,23 @@ export class AppSettings {
         settings.response.isWordWrap = !settings.response.isWordWrap
         Storage.storeSettings(settings)
         return settings.response.isWordWrap
+    }
+    static isSettingsOpen(): boolean {
+        // adding this check because the settings open/close state was added after the initial release. Should never
+        // be undefined for new install
+        if(AppSettings.get().isSettingsOpen === undefined) {
+            const settings = AppSettings.get()
+            settings.isSettingsOpen = false
+            Storage.storeSettings(settings)
+        }
+        return AppSettings.get().isSettingsOpen
+    }
+
+    static toggleSettings(): boolean {
+        const settings = AppSettings.get()
+        settings.isSettingsOpen = !settings.isSettingsOpen
+        Storage.storeSettings(settings)
+        return settings.isSettingsOpen
     }
 
     static getPrettyPrintBytesLimit(): number {

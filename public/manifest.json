@@ -1,7 +1,7 @@
 {
   "name": "cREST Client",
   
-  "version": "4.0.3",
+  "version": "4.0.4",
   
   "manifest_version": 3,
   "description": "RESTful service tester.",
@@ -14,7 +14,7 @@
   
   "action": {
   	"default_icon": "images/icon.png",
-    "default_title": "Rest Client"
+    "default_title": "cREST Client"
   },
   "background": {
     "service_worker": "serviceWorker/background.js",

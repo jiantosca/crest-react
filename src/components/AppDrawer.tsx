@@ -23,7 +23,41 @@ export const AppDrawer = () => {
     console.log(`<AppDrawer /> rendered ${++renderCounter.current} times`)
 
     const appState = useApplicationContext()
-    const padLeft = 2;
+
+    return (
+        <Drawer
+            sx={{
+                width: appState.drawerWidth,
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {
+                    width: appState.drawerWidth,
+                    boxSizing: 'border-box',
+                },
+            }}
+            variant="persistent"
+            anchor="left"
+            open={appState.isDrawerOpen}
+            transitionDuration={0}
+        >
+
+            <AppDrawerTabs />
+            
+            <Divider />
+
+            {/* we'll give key as unique value so we render new comp instead of rerendering the same comp. This is to ensure we repopulate all settings
+            when they're updated in a different tab. App.tsx has storage listener so we can keep settings in sync across tabs, so when one tab updates
+            them we want it reflected in all tabs */}
+            <AppDrawerSettings key={renderCounter.current}/>
+
+        </Drawer>
+    )
+}
+
+const AppDrawerSettings = () => {
+    const renderCounter = React.useRef(0)
+    console.log(`<AppDrawerSettings /> rendered ${++renderCounter.current} times`)
+
+    const appState = useApplicationContext()
 
     // unlike darkmode toggle that uses the more global drawerState that has darkMode attribute, we'll just use a local state for this. For 
     // word wrap we don't want to trigger app wide rerender, we just want to update settings that any future responses would use. Existing
@@ -71,88 +105,71 @@ export const AppDrawer = () => {
         AppSettings.setPrettyPrintBytesLimit(prettyPrintBytesLimit)
     }
 
-    const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const [settingsOpen, setSettingsOpen] = React.useState(AppSettings.isSettingsOpen());
     const toggleSettings = () => {
-        setSettingsOpen(!settingsOpen);
+        const toggled = AppSettings.toggleSettings()
+        setSettingsOpen(toggled)
     };
 
+    const padLeft = 2;
+
     return (
-        <Drawer
-            sx={{
-                width: appState.drawerWidth,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                    width: appState.drawerWidth,
-                    boxSizing: 'border-box',
-                },
-            }}
-            variant="persistent"
-            anchor="left"
-            open={appState.isDrawerOpen}
-            transitionDuration={0}
-        >
+        <List>
+        <ListItemButton onClick={toggleSettings}>
+            <ListItemIcon>
+                <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Settings" />
+            {settingsOpen ? <ExpandMoreIcon /> : <ExpandLessIcon /> }
+        </ListItemButton>
+        <Collapse in={settingsOpen} timeout="auto">
+            <ListItem sx={{ pl: padLeft }}>
+                <ListItemIcon><Brightness4Icon /></ListItemIcon>
+                <ListItemText id="switch-list-label-darkmode" primary="Dark Mode" />
+                <Switch edge='end' size={RcUtils.defaultSize}
+                    checked={appState.isDarkMode} onChange={appState.toggleDarkMode}
+                    inputProps={{ 'aria-labelledby': 'switch-list-label-darkmode' }} />
+            </ListItem>
 
-            <AppDrawerTabs />
-
-            <Divider />
-            <List>
-                <ListItemButton onClick={toggleSettings}>
-                    <ListItemIcon>
-                        <SettingsIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Settings" />
-                    {settingsOpen ? <ExpandMoreIcon /> : <ExpandLessIcon /> }
+            <ListItem sx={{ pl: padLeft }}>
+                <ListItemIcon><WrapTextIcon /></ListItemIcon>
+                <ListItemText id="switch-list-label-wordwrap" primary="Word Wrap" />
+                <Switch edge='end' size={RcUtils.defaultSize}
+                    checked={wordWrap} onChange={toggleWordWrap}
+                    inputProps={{ 'aria-labelledby': 'switch-list-label-wordwrap' }} />
+            </ListItem>
+            <ListItem key='urlAndHeaderHistory' disablePadding>
+                <ListItemButton disableRipple sx={{
+                    pl: padLeft,
+                    cursor: 'default',
+                    '&:hover': {
+                        backgroundColor: 'transparent',
+                    },
+                }}>
+                    <ListItemIcon><ManageHistoryIcon /></ListItemIcon>
+                    <Box display="flex" justifyContent="space-between" width="100%">
+                        <Button disabled variant='outlined'>URLs</Button>
+                        <Button disabled variant='outlined'>Headers</Button>
+                        {/* <ListItemText primary={<Button variant='outlined'>URLs</Button>} />
+                    <ListItemText primary={<Button variant='outlined'>Headers</Button>} /> */}
+                    </Box>
                 </ListItemButton>
-                <Collapse in={settingsOpen} timeout="auto">
-                    <ListItem sx={{ pl: padLeft }}>
-                        <ListItemIcon><Brightness4Icon /></ListItemIcon>
-                        <ListItemText id="switch-list-label-darkmode" primary="Dark Mode" />
-                        <Switch edge='end' size={RcUtils.defaultSize}
-                            checked={appState.isDarkMode} onChange={appState.toggleDarkMode}
-                            inputProps={{ 'aria-labelledby': 'switch-list-label-darkmode' }} />
-                    </ListItem>
+            </ListItem>
+            <ListItem sx={{ pl: padLeft }}>
 
-                    <ListItem sx={{ pl: padLeft }}>
-                        <ListItemIcon><WrapTextIcon /></ListItemIcon>
-                        <ListItemText id="switch-list-label-wordwrap" primary="Word Wrap" />
-                        <Switch edge='end' size={RcUtils.defaultSize}
-                            checked={wordWrap} onChange={toggleWordWrap}
-                            inputProps={{ 'aria-labelledby': 'switch-list-label-wordwrap' }} />
-                    </ListItem>
-                    <ListItem key='urlAndHeaderHistory' disablePadding>
-                        <ListItemButton disableRipple sx={{
-                            pl: padLeft,
-                            cursor: 'default',
-                            '&:hover': {
-                                backgroundColor: 'transparent',
-                            },
-                        }}>
-                            <ListItemIcon><ManageHistoryIcon /></ListItemIcon>
-                            <Box display="flex" justifyContent="space-between" width="100%">
-                                <Button disabled variant='outlined'>URLs</Button>
-                                <Button disabled variant='outlined'>Headers</Button>
-                                {/* <ListItemText primary={<Button variant='outlined'>URLs</Button>} />
-                            <ListItemText primary={<Button variant='outlined'>Headers</Button>} /> */}
-                            </Box>
-                        </ListItemButton>
-                    </ListItem>
-                    <ListItem sx={{ pl: padLeft }}>
+                <TextField variant="standard" size="small" type="text" label="Timeout" sx={{ width: '30%' }}
+                    onChange={updateTimeout}
+                    defaultValue={AppSettings.getServiceTimeout()} />
 
-                        <TextField variant="standard" size="small" type="text" label="Timeout" sx={{ width: '30%' }}
-                            onChange={updateTimeout}
-                            defaultValue={AppSettings.getServiceTimeout()} />
+                <TextField variant="standard" size="small" type="text" label="Highlight Limit" sx={{ ml: 2, width: '40%' }}
+                    onChange={updatePrettyPrintBytesLimit}
+                    defaultValue={AppSettings.getPrettyPrintBytesLimit()} />
 
-                        <TextField variant="standard" size="small" type="text" label="Highlight Limit" sx={{ ml: 2, width: '40%' }}
-                            onChange={updatePrettyPrintBytesLimit}
-                            defaultValue={AppSettings.getPrettyPrintBytesLimit()} />
+                <TextField disabled variant="standard" size="small" type="text" label="History Limit" sx={{ ml: 2, width: '30%' }}
+                    onChange={updateHistoryLimit}
+                    defaultValue={AppSettings.getHistoryLimit()} />
 
-                        <TextField disabled variant="standard" size="small" type="text" label="History Limit" sx={{ ml: 2, width: '30%' }}
-                            onChange={updateHistoryLimit}
-                            defaultValue={AppSettings.getHistoryLimit()} />
-
-                    </ListItem>
-                </Collapse>
-            </List>
-        </Drawer>
-    )
-}
+            </ListItem>
+        </Collapse>
+    </List>    )
+  }
