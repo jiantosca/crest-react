@@ -245,7 +245,7 @@ export const RequestButton = (
       chrome.runtime.sendMessage(httpRequest, exchangeCompletionHandler);
     } else {
       console.log('<RequestButton />.sendClickCallback not running as extension')
-      const httpExchangeHandler = new HttpExchangeHandler(httpRequest)
+      const httpExchangeHandler = new HttpExchangeHandler(httpRequest, false)
       outerState.inFlightHttpExchangeHandler = httpExchangeHandler
       httpExchangeHandler.submitRequest().then(exchangeCompletionHandler)
     }

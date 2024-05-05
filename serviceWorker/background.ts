@@ -54,7 +54,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	console.log(`background.ts.onMessage has ${activeExchangeHandlers.size} activeExchangeHandlers:`, activeExchangeHandlers)
 	if (request.url) {
 		console.log('background.ts.onMessage handling new http request')
-		const exchangeHandler = new HttpExchangeHandler(request)
+		const exchangeHandler = new HttpExchangeHandler(request, true)
 		activeExchangeHandlers.set(request.id, exchangeHandler)
 		exchangeHandler.submitRequest().then((exchange) => {
 			activeExchangeHandlers.delete(request.id)

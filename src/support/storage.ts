@@ -59,7 +59,7 @@ export class Storage {
     }
 
     static storeHeaders(newHeaders: string[]): void {
-        const excludes = ['-timestamp', '-digest', '-guid', 'authorization', 'crest-']
+        const excludes = ['-timestamp', '-digest', '-guid', 'authorization', 'crest-', 'cookie']
         newHeaders = newHeaders.filter(header => 
             !excludes.some(exclude => header.toLowerCase().includes(exclude))
         )
@@ -78,9 +78,10 @@ export class Storage {
     }
     
     static storeOAuths(oauths: HttpRequest[]): void {
+        this.sortHttpRequests(oauths)
         localStorage.setItem(Storage.Keys.oauths, JSON.stringify(oauths))
+        //this event allows oauth tab in drawer to update. If another tab is open, they would get updated via storage event.
         document.dispatchEvent(new CustomEvent(Storage.oauthsUpdateEventName, {detail: oauths}))
-
     }
     
     static listHttpRequests(): HttpRequest[] {
@@ -94,7 +95,9 @@ export class Storage {
     }
 
     static storeHttpRequests(httpRequests: HttpRequest[]): void {
+        this.sortHttpRequests(httpRequests)
         localStorage.setItem(Storage.Keys.savedRequests, JSON.stringify(httpRequests))
+        //this event allows saved tab in drawer to update. If another tab is open, they would get updated via storage event.
         document.dispatchEvent(new CustomEvent(Storage.savedRequestsUpdateEventName, {detail: httpRequests}))
     }
 
@@ -199,6 +202,21 @@ export class Storage {
         }
     }
 
+    /**
+     * Alphabetically sort the requests by name.
+     * 
+     * @param requests 
+     */
+    private static sortHttpRequests(requests: HttpRequest[]): void {
+        requests.sort((r1, r2) => {
+            let n1 = r1.name.toLowerCase()
+            let n2 = r2.name.toLowerCase()
+            return (n1 < n2) ? -1:(n1 > n2) ? 1:0
+        })
+    }
+
+
+    //todo - i guess i can remove this, doesn't appear to be used anywhere
     isArrayOfStrings = (anArray: any) => {
         if (!Array.isArray(anArray)) {
             return false;

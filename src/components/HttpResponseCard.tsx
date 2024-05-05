@@ -124,7 +124,7 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                 chrome.runtime.sendMessage(request, exchangeCompletionHandler);
               } else {
                 console.log('<RequestButton />.sendClickCallback not running as extension')
-                const httpExchangeHandler = new HttpExchangeHandler(request)
+                const httpExchangeHandler = new HttpExchangeHandler(request, false)
                 httpExchangeHandler.submitRequest().then(exchangeCompletionHandler)
               }            
           } catch (error) {

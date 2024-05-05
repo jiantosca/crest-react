@@ -123,7 +123,7 @@ export class HeaderHelper {
                 chrome.runtime.sendMessage(httpRequestWithId, tokenExchangeCompletionHandler);
             } else {
                 console.log('HeaderHelper.resolveOauthHeader not running as extension')
-                this.httpExchangeHandler = new HttpExchangeHandler(httpRequestWithId, oauthTimout)
+                this.httpExchangeHandler = new HttpExchangeHandler(httpRequestWithId, false, oauthTimout)
                 console.log('HeaderHelper.resolveOauthHeader TODO this next line is for stoping when not running as an ext');
                 //outerState.inFlightHttpExchangeHandler = httpExchangeHandler
                 this.httpExchangeHandler.submitRequest().then(tokenExchangeCompletionHandler)

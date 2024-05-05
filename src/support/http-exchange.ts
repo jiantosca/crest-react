@@ -41,12 +41,16 @@ export class HttpExchangeHandler {
     endTime: number | undefined
     httpExchange: HttpExchange | undefined
     httpRequest: HttpRequest
+    isExtensionRuntime: boolean
+    chromeCookieNames: string[]
 
-    constructor(httpRequest: HttpRequest, timeout?: number) {
+    constructor(httpRequest: HttpRequest, isExtensionRuntime: boolean, timeout?: number) {
         console.log('HttpExchangeHandler constructor')
+        this.isExtensionRuntime = isExtensionRuntime
         this.httpRequest = httpRequest
         this.abortController = new AbortController()
         this.timeout = (timeout) ? timeout : this.timeout
+        this.chromeCookieNames = []
     }
 
     /**
@@ -62,21 +66,41 @@ export class HttpExchangeHandler {
 
         const headers = new Headers()
         this.httpRequest.headers.forEach(header => {
-            headers.append(header.name, header.value)
+            // cookies are just headers, but in chrome it's not that simple. When running as an extension, we need to use the chrome.cookies api
+            // to set the cookies. When running as a web app we won't support cookie headers from the request building. But, if you some other
+            // tab has a cookie for the domain cREST is making request too, chrome will include them in the request. 
+            if(this.isExtensionRuntime && header.name.toLowerCase() === 'cookie') {
+                this.handleChromeCookies(header);
+            } else {
+                headers.append(header.name, header.value)
+            }
         })
 
-        fetch(this.httpRequest.url, {
+        let fetchOptions: RequestInit = {
             method: this.httpRequest.method,
             headers: headers,
             cache: 'no-cache',
             body: this.httpRequest.body,
             signal: this.abortController.signal
-        }).then(async response => {
+        }
+        
+        // when not running as extension, we need to 'include' credentials option for cookies to work with cors request which we do
+        // When running as an extension, we don't need to include credentials as the extension is not subject to cors and
+        // cookies are included by default when applicable (i.e. cookie set for domain that ext making req to)
+        fetchOptions = !this.isExtensionRuntime ? { ...fetchOptions, credentials: 'include' } : fetchOptions
+
+        console.log(fetchOptions)
+
+        fetch(this.httpRequest.url, fetchOptions).then(async response => {
             this.httpExchange = this.createHttpExchange(response, await response.text())
         }).catch((error) => {
             console.error('HttpExchangeHandler.sendRequest caught an error', error)
             this.httpExchange = this.createHttpExchange()
         }).finally(() => {
+            if(this.isExtensionRuntime && this.chromeCookieNames.length > 0) {
+                this.removeChromeCookies()
+            }
+
             if (!this.httpExchange) {
                 console.error('HttpExchangeHandler.sendRequest finished an undefined httpExchange. This should ' +
                     'never happen and indicates we have a bug to fix. Here\'s the request');
@@ -87,7 +111,6 @@ export class HttpExchangeHandler {
             if (timeoutId) {
                 clearTimeout(timeoutId)
             }
-
             completionHandler(this.httpExchange)
         });
     }
@@ -155,4 +178,30 @@ export class HttpExchangeHandler {
             },
         }
     }
+
+    
+    private handleChromeCookies(cookieHeader: NameValuePair) {
+        let pairs = cookieHeader.value.split(';')
+        pairs.forEach(pair => {
+            let [cookieName, ...cookieValues] = pair.split('=')//possible that value has = in it so keep in ...values array
+            cookieName = cookieName.trim()
+            const cookieValue = cookieValues.join('=').trim()
+    
+            // Validate the cookie name
+            if (!cookieName || /[\s;=,]/.test(cookieName) || !cookieValue) {
+                console.warn(`Can't deal with name/value pair for this cookie: "'${pair}'". Check the format`)
+                return
+            }
+            console.log(`Adding cookie to chrome: ${cookieName} = ${cookieValue}`)
+            this.chromeCookieNames.push(cookieName);//used to remove when request is finished
+            chrome.cookies.set({ url: this.httpRequest.url, name: cookieName, value: cookieValue })
+        })
+    }
+
+    private removeChromeCookies() {
+        this.chromeCookieNames.forEach(cookieName => {
+            console.log(`Removing chrom cookie named '${cookieName}'`);
+            chrome.cookies.remove({ url: this.httpRequest.url, name: cookieName })
+        });
+    }               
 }

@@ -15,6 +15,8 @@ import PublishIcon from '@mui/icons-material/Publish';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useTheme } from '@mui/material/styles';
 
+const storageEventName = 'storage'
+
 const toToolTip = (httpRequest: HttpRequest, includeDateInToolTip: boolean): React.ReactNode => {
     const formattedDate = (httpRequest.timestamp) ? new Date(httpRequest.timestamp)
         .toLocaleDateString('en-US', {
@@ -81,7 +83,7 @@ const HistoryTabContent = () => {
     const appContext = useApplicationContext()
 
     const handleSave = (httpRequest: HttpRequest) => {
-        appContext.showDialog('Save Request', <RequestEditor httpRequest={httpRequest} isOauth={httpRequest.isOAuth}/>, false)
+        appContext.showDialog('Save Request', <RequestEditor httpRequest={httpRequest} isOauth={httpRequest.isOAuth} />, false)
     }
 
     const handleDelete = (httpRequest: HttpRequest) => {
@@ -91,15 +93,22 @@ const HistoryTabContent = () => {
 
     React.useEffect(() => {
         const handleUpdate = (e: Event) => {
-          setRequests((e as CustomEvent).detail as HttpRequest[])
+            setRequests((e as CustomEvent).detail as HttpRequest[])
         }
-        document.addEventListener(Storage.requestHistoryUpdateEventName, handleUpdate);
-    
+        const handleStorageEvent = (e: StorageEvent) => {
+            if (e.key === Storage.Keys.requestHistory) {
+                setRequests(Storage.listRequestHistory())
+            }
+        }
+        document.addEventListener(Storage.requestHistoryUpdateEventName, handleUpdate)
+        window.addEventListener(storageEventName, handleStorageEvent)
         // Cleanup
         return () => {
             document.removeEventListener(Storage.requestHistoryUpdateEventName, handleUpdate)
-        };
-      }, [])
+            window.removeEventListener(storageEventName, handleStorageEvent)
+
+        }
+    }, [])
 
     return (
         <List>
@@ -144,15 +153,21 @@ const SavedTabContent = () => {
 
     React.useEffect(() => {
         const handleUpdate = (e: Event) => {
-          setRequests((e as CustomEvent).detail as HttpRequest[])
+            setRequests((e as CustomEvent).detail as HttpRequest[])
         }
-        document.addEventListener(Storage.savedRequestsUpdateEventName, handleUpdate);
-    
+        const handleStorageEvent = (e: StorageEvent) => {
+            if (e.key === Storage.Keys.savedRequests) {
+                setRequests(Storage.listHttpRequests())
+            }
+        }
+        document.addEventListener(Storage.savedRequestsUpdateEventName, handleUpdate)
+        window.addEventListener(storageEventName, handleStorageEvent)
         // Cleanup
         return () => {
-            document.addEventListener(Storage.savedRequestsUpdateEventName, handleUpdate);
-        };
-      }, [])
+            document.removeEventListener(Storage.savedRequestsUpdateEventName, handleUpdate)
+            window.removeEventListener(storageEventName, handleStorageEvent)
+        }
+    }, [])
 
     return (
         <List>
@@ -184,7 +199,7 @@ const OAuthTabContent = () => {
     const handleEdit = (httpRequest: HttpRequest) => {
         appContext.showDialog(`Editing '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequest} isOauth={true} />, false)
     }
-    
+
     const handleCopy = (httpRequest: HttpRequest) => {
         const httpRequestCopy = { ...httpRequest, name: '' }
         appContext.showDialog(`Copying '${httpRequest.name}'`, <RequestEditor httpRequest={httpRequestCopy} isOauth={true} />, false)
@@ -197,15 +212,23 @@ const OAuthTabContent = () => {
 
     React.useEffect(() => {
         const handleUpdate = (e: Event) => {
-          setRequests((e as CustomEvent).detail as HttpRequest[])
+            setRequests((e as CustomEvent).detail as HttpRequest[])
         }
-        document.addEventListener(Storage.oauthsUpdateEventName, handleUpdate);
-    
+        const handleStorageEvent = (e: StorageEvent) => {
+            if (e.key === Storage.Keys.oauths) {
+                setRequests(Storage.listOAuths())
+            }
+        }
+        document.addEventListener(Storage.oauthsUpdateEventName, handleUpdate)
+        window.addEventListener(storageEventName, handleStorageEvent)
+
         // Cleanup
         return () => {
-            document.addEventListener(Storage.oauthsUpdateEventName, handleUpdate);
+            document.removeEventListener(Storage.oauthsUpdateEventName, handleUpdate)
+            window.removeEventListener(storageEventName, handleStorageEvent)
+
         };
-      }, [])
+    }, [])
 
     return (
         <List>
@@ -228,20 +251,22 @@ const OAuthTabContent = () => {
 }
 
 const HttpRequestListItem = ({ request, displayText, wordWrap, includeDateInToolTip, deleteButton, buttons }:
-                             { request: HttpRequest,
-                               displayText: string,
-                               wordWrap: boolean,
-                               includeDateInToolTip: boolean,
-                               deleteButton: React.ReactNode,
-                               buttons: React.ReactNode[]}) => {
-    
+    {
+        request: HttpRequest,
+        displayText: string,
+        wordWrap: boolean,
+        includeDateInToolTip: boolean,
+        deleteButton: React.ReactNode,
+        buttons: React.ReactNode[]
+    }) => {
+
     const renderCounter = React.useRef(0)
     console.log(`<HttpRequestListItem /> rendered ${++renderCounter.current} times`)
 
     const [isHovered, setIsHovered] = React.useState(false)
 
     const populatedToolTipTitle = <Typography component='div' sx={{ fontSize: '1.25em' }}>{toToolTip(request, includeDateInToolTip)}</Typography>
-    
+
     const [toolTipTitle, setToolTipTitle] = React.useState<React.ReactNode>(populatedToolTipTitle)
 
     const buttonBox =
