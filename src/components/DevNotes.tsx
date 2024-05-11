@@ -14,6 +14,11 @@ export const DevNotes = () => {
             <br/>
             {showDevNotes &&
                 <Box>
+                  <b>4.0.6</b>
+                    <ul>
+                        <li>date subheader to better organize history tab items</li>
+                        <li>bug fix for HEAD req - HEAD doesn't (or shouldn't) return a body, but the ext was still trying to parse/format it. Now we don't.</li>
+                    </ul>                         
                     <b>4.0.5</b>
                     <ul>
                         <li>http-exchange.ts updated to know if running as ext or not so it can set "credentials: 'include'" on the fetch so that CORS requests support cookies like exts do (automagically include them)</li>

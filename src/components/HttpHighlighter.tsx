@@ -63,7 +63,7 @@ function prettyPrint(body: string, headers: NameValuePair[]): string {
 
     body = body.trim();
 
-    if (!body && body.indexOf('\n') !== -1) {//&& settings.prettyPrint
+    if (!body || body.indexOf('\n') !== -1) {
         return body;
     }
 

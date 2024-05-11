@@ -2,7 +2,7 @@ import * as React from 'react'
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { Tab, Tabs, Divider, Box, Typography, Tooltip, Stack, IconButton } from '@mui/material';
+import { Tab, Tabs, Divider, Box, Typography, Tooltip, Stack, IconButton, ListSubheader } from '@mui/material';
 import { loadRequestEventType } from './RequestBuilder'
 import { Storage } from '../support/storage';
 import { HttpRequest } from '../support/http-exchange';
@@ -17,7 +17,7 @@ import { useTheme } from '@mui/material/styles';
 
 const storageEventName = 'storage'
 
-const toToolTip = (httpRequest: HttpRequest, includeDateInToolTip: boolean): React.ReactNode => {
+const toRequestToolTipContent = (httpRequest: HttpRequest, includeDateInToolTip: boolean): React.ReactNode => {
     const formattedDate = (httpRequest.timestamp) ? new Date(httpRequest.timestamp)
         .toLocaleDateString('en-US', {
             year: 'numeric',
@@ -43,6 +43,15 @@ const toToolTip = (httpRequest: HttpRequest, includeDateInToolTip: boolean): Rea
     )
 }
 
+const toDayMonthYear = (httpRequest: HttpRequest) => { 
+    return (httpRequest.timestamp) ? new Date(httpRequest.timestamp)
+        .toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour12: true
+        }) : ''
+}
 export const AppDrawerTabs = () => {
     const renderCounter = React.useRef(0)
     console.log(`<AppDrawerTabs /> rendered ${++renderCounter.current} times`)
@@ -110,21 +119,36 @@ const HistoryTabContent = () => {
         }
     }, [])
 
+
+    requests.forEach(request => { 
+        console.log(toDayMonthYear(request))
+    })
+    let lastSubheaderString: string = ''
     return (
         <List>
             {
-                requests.map((request, index) => (
-                    <HttpRequestListItem key={index} request={request}
-                        displayText={`${request.method} ${request.url}`}
-                        includeDateInToolTip={true}
-                        //wordWrap={false}
-                        wordWrap={true}
-                        deleteButton={<IconButton key='delete' size='small' onClick={() => handleDelete(request)}><DeleteForeverIcon color='warning' /></IconButton>}
-                        buttons={[
-                            <IconButton key={`save-${index}`} size='small' onClick={() => handleSave(request)}><SaveIcon /></IconButton>
-                        ]}
-                    />
-                ))
+                
+                requests.map((request, index) => {
+                    const subheaderString = toDayMonthYear(request)
+                    let subheader: JSX.Element | undefined
+                    if (subheaderString &&  subheaderString !== lastSubheaderString) {
+                        lastSubheaderString = subheaderString
+                        subheader = <ListSubheader>{subheaderString}</ListSubheader>
+                    }
+                    return <>
+                        {subheader && subheader}
+                        <HttpRequestListItem key={index} request={request}
+                            displayText={`${request.method} ${request.url}`}
+                            includeDateInToolTip={true}
+                            //wordWrap={false}
+                            wordWrap={true}
+                            deleteButton={<IconButton key='delete' size='small' onClick={() => handleDelete(request)}><DeleteForeverIcon color='warning' /></IconButton>}
+                            buttons={[
+                                <IconButton key={`save-${index}`} size='small' onClick={() => handleSave(request)}><SaveIcon /></IconButton>
+                            ]}
+                        />
+                    </>
+                })
             }
         </List>)
 }
@@ -172,7 +196,7 @@ const SavedTabContent = () => {
     return (
         <List>
             {
-                requests.map((request, index) => (
+                requests.map((request, index) => 
                     <HttpRequestListItem key={index} request={request}
                         displayText={request.name}
                         wordWrap={true}
@@ -183,7 +207,7 @@ const SavedTabContent = () => {
                             <IconButton key={`copy-${index}`} size='small' onClick={() => handleCopy(request)}><ContentCopyIcon /></IconButton>
                         ]}
                     />
-                ))
+                )
             }
         </List>)
 }
@@ -265,7 +289,7 @@ const HttpRequestListItem = ({ request, displayText, wordWrap, includeDateInTool
 
     const [isHovered, setIsHovered] = React.useState(false)
 
-    const populatedToolTipTitle = <Typography component='div' sx={{ fontSize: '1.25em' }}>{toToolTip(request, includeDateInToolTip)}</Typography>
+    const populatedToolTipTitle = <Typography component='div' sx={{ fontSize: '1.25em' }}>{toRequestToolTipContent(request, includeDateInToolTip)}</Typography>
 
     const [toolTipTitle, setToolTipTitle] = React.useState<React.ReactNode>(populatedToolTipTitle)
 
