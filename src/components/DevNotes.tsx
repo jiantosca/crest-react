@@ -14,6 +14,14 @@ export const DevNotes = () => {
             <br/>
             {showDevNotes &&
                 <Box>
+                  <b>4.0.7</b>
+                    <ul>
+                        <li>Sorting auto suggest better so crest oauth/saved show up first</li>
+                        <li>Updating version caption into seperate comp that supports fetch for when not running as ext.</li>
+                        <li>URL auto complete updated to be case insensitive</li>
+                        <li>Fixed <i>unique "key" prop</i> issue when i added subheader to history tab. Change from react fragment to Box so i could add key.</li>
+                        <li>Updated show/hide headers so it only impacts responses and not request.</li>
+                    </ul>                     
                   <b>4.0.6</b>
                     <ul>
                         <li>date subheader to better organize history tab items</li>
@@ -37,30 +45,20 @@ export const DevNotes = () => {
                     </ul>
                     <b>TODOs</b>
                     <ul>
-                        <li>doing a HEAD results in "rest-client-response-note: Content-Type is json, but I can't parse it. See console logs" I think i shouldn't try to parse body of head since i think it returns resp headers of a get, but no body.</li>
-                        <li>keep drawer tabs (history/saved/oauth) in sync like we do for settings using storage listeners</li>
-                        <li>for saved requests use date sub list</li>
-                        <li>figure out for history if request has already been saved by comparing method, url, header, body so that duplicates aren't saved.</li>
+                        <li>colapse so we only see response title line of response card</li>
+                        <li>Response time and render time</li>
                         <li>Rename RcUtils to something else since i think we'll stick with cREST name.</li>
                         <li>RequestButton and RequestEditor has some overlapping validation code we could refactor into one place</li>
                         <li>Had to use a div in AppDrawer ListItemText for history to show the ellipsis on overflow, maybe url autocomplete needs the same?</li>
-                        <li>need to ensure we always have a content length, sometimes server don't return one.</li>
                         <li>rename storage to persistence.</li>
-                        <li>Change oauths to use HttpRequestBundle with name instead of HttpRequest with only id? Or maybe optional name on HttpRequest and remove bundle? I dunno</li>
                         <li>when importing from legacy crest, headers (and urls) prefixed with crest* should be excluded since mui doesn't like when two autosuggests have the same value. they can overlap when header exists in history, and oauth bundle with same name exists.</li>
-                        <li>consigs non persistent headers, timeouts. Maybe one timeout which includes time for oauth (and header processing) plus real http req. So when calling for real http req, timeout should be timeout - header helper time </li>
+                        <li>configs non persistent headers, timeouts. Maybe one timeout which includes time for oauth (and header processing) plus real http req. So when calling for real http req, timeout should be timeout - header helper time </li>
                         <li>Line numbers not right alighted in some cases like when hitting crest resources or when running as web app instead of ext. In both cases, headers are limited so maybe something to do with that.</li>
                         <li>Basic auth support</li>
                         <li>Need logic to convert old storage to new, like uriHistory will be urlHistory, and simpleOAuth will be oauth.</li>
                         <li>Rename Storage.tsx to something else since Storage is an existing interface https://developer.mozilla.org/en-US/docs/Web/API/Storage</li>
                         <li>Maybe i should have a "main wrapper" where request building and responses all go in then i can control margins across the board?</li>
                         <li>prismjs 1.22.0 was last version that didn't have the formatting bug when body with xml or json has with mime type params. No formatting when they do.</li>
-                        <li>
-                            <b>Fetch related stuff</b>
-                            <ul>
-                                <li>More OAuth testing</li>
-                            </ul>
-                        </li>
                         <li>
                             <b>Drawer</b>
                             <ul>
@@ -85,7 +83,6 @@ export const DevNotes = () => {
                         <li>
                             <b>Misc</b>
                             <ul>
-                                <li>Show/Hide dev notes</li>
                                 <li>Styling: control padding '0px 20px 0px 20px' globally. I think cards do a bit different but still 20 plays role, should be able to change to 15 very easily.</li>
                                 <li>Styling: use brightness for highlighter to make highlighting brighter? sample from DevNotes comp - filter: 'brightness(80%)' </li>
                             </ul>

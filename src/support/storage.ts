@@ -171,7 +171,7 @@ export class Storage {
         localStorage.clear();
     }
     
-    static listPersistenceUrls() {
+    static listCRestPersistenceUrls() {
         const base = 'crest://persistence'
         const urls = [base]
         Storage.Keys.listKeys().forEach(key => {

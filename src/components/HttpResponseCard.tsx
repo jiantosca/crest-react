@@ -270,7 +270,7 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                 showRequest ? 
                     <Stack>
                         <Typography>Request</Typography>
-                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.request} wordWrap={wordWrap} minimalHeaders={minimalHeaders}/></Box>
+                        <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.request} wordWrap={wordWrap} minimalHeaders={false}/></Box>
                         <Divider/>
                         <Typography pt={'15px'}>Response</Typography>
                         <Box pl={'10px'}><HttpHighlighter requestOrResponse={exchangeState.response} wordWrap={wordWrap} minimalHeaders={minimalHeaders}/></Box>

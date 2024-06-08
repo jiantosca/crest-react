@@ -20,23 +20,23 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
       if (trimmedInputValue.length < 3) {
         return [];
       }
-  
-      const tokens = trimmedInputValue.split(' ')
-      const suggestions = [] as string[]
+
+      const tokens = trimmedInputValue.toLowerCase().split(' ')
+          .filter(token => token !== '')
       
-  
-      // Return up to 100 suggestions when all tokens much be in the url, and the url doesn't 
-      // match the current input value. URL history can get big and we don't want to be redering
-      // crazy amounts of suggestions.
+      const suggestions = [] as string[]
+
+      // Return up to 100 suggestions when all tokens are in the stored item (typically a url), and
+      // the item doesn't match the current input value. URL history can get big and we don't want
+      // to be rederingc razy amounts of suggestions.
       [ ...Storage.listHttpRequests().map(httpRequest => savedPrefix + httpRequest.name), 
         ...Storage.listOAuths().map(oauth => oauthPrefix + oauth.name), 
-        ...Storage.listUrls(), 
-        ...Storage.listPersistenceUrls()].sort().some((url) => {
-        if (tokens.every(token => url.includes(token)) &&
-          trimmedInputValue !== url) {
-          suggestions.push(url)
-        }
-        return suggestions.length === 100
+        ...Storage.listUrls().sort(), 
+        ...Storage.listCRestPersistenceUrls()].some((url) => {
+          if (tokens.every(token => url.toLowerCase().includes(token)) && trimmedInputValue !== url) {
+            suggestions.push(url)
+          }
+          return suggestions.length === 100
       })
   
       return suggestions 
@@ -80,7 +80,13 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
         return (<li {...props}>{option}</li>)
       }
     }
-  
+    
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        console.log('eventually supprt enter key press to submit request')
+      }
+    }
+
     return (
       <Autocomplete
         size={RcUtils.defaultSize}
@@ -92,6 +98,7 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
         value={urlRef.current}
         onChange={onChange}
         onInputChange={onChange}
+        onKeyDown={handleKeyDown}
         options={[]} //never suggest options by default, only when typeing starts
         filterOptions={filterUrlOptions}
         freeSolo

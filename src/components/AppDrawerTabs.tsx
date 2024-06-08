@@ -120,22 +120,22 @@ const HistoryTabContent = () => {
     }, [])
 
 
-    requests.forEach(request => { 
-        console.log(toDayMonthYear(request))
-    })
+    // requests.forEach(request => { 
+    //     console.log(toDayMonthYear(request))
+    // })
+
     let lastSubheaderString: string = ''
     return (
         <List>
             {
-                
                 requests.map((request, index) => {
                     const subheaderString = toDayMonthYear(request)
                     let subheader: JSX.Element | undefined
                     if (subheaderString &&  subheaderString !== lastSubheaderString) {
                         lastSubheaderString = subheaderString
-                        subheader = <ListSubheader>{subheaderString}</ListSubheader>
+                        subheader = <ListSubheader key={`${index}-subheader`}>{subheaderString}</ListSubheader>
                     }
-                    return <>
+                    return <Box key={`${index}-history-box`}>
                         {subheader && subheader}
                         <HttpRequestListItem key={index} request={request}
                             displayText={`${request.method} ${request.url}`}
@@ -147,7 +147,7 @@ const HistoryTabContent = () => {
                                 <IconButton key={`save-${index}`} size='small' onClick={() => handleSave(request)}><SaveIcon /></IconButton>
                             ]}
                         />
-                    </>
+                    </Box>
                 })
             }
         </List>)

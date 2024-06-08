@@ -1,9 +1,9 @@
-import { Stack, Typography } from '@mui/material'
+import { Stack } from '@mui/material'
 import * as React from 'react'
 import { HttpResponseCard } from './HttpResponseCard'
 import { useApplicationContext, useHttpExchangeContext } from '../support/react-contexts';
 import { useScrollbarVisibleForWindow } from '../support/scrollbar-hooks';
-import { RcUtils } from '../support/rest-client-utils';
+import { Version } from './Version';
 /**
  * This component is responsible for rendering the http responses via HttpResponseCard. It's basically a kind
  * of wrapper for all responses.
@@ -76,6 +76,12 @@ export const HttpResponses = () => {
      * 
      * TODO: There must be a better way to force the response card to fit within the viewable area without having to worry about the scrollbar
      * and calculating the width offset using stuff like "maxWidth: `calc(100vw - ${widthOffset}px)` }}"
+     * 
+     * 5/11/24 - so on mac's System Settings > Appearance > Show scroll bars it'll default to "Automatically based on mouse or trackpad" which
+     * ofen leads to no scrollbar being visible until you start scrolling. What i have below works for whatever option the user has, but it's
+     * kinda wierd with a response that can be scrolled horizontally. It just kinda looks cut off, but you can scroll it by selecting and moving
+     * right... then scroll bar pops up. Not the best UX. Maybe i need visual indicator that there's more to see to the right like ellipsis and 
+     * I could also implement that grab scroll code from old cREST.
      */
 
     //let widthOffset = appState.isDrawerOpen ? appState.drawerWidth + 55 : 55
@@ -94,12 +100,8 @@ export const HttpResponses = () => {
     return (
         <Stack rowGap={2.5} marginBottom={5}
             sx={{ padding: '0px', ml: `${margin}px`, mr: `${margin}px`, maxWidth: `calc(100vw - ${offset}px)` }}>
-            {/* <MyAutoComplete />
-            <MyAutoComplete3 /> */}
             {responses}
-            <Typography pl={2} variant='caption' color='gray'>
-              {RcUtils.isExtensionRuntime() ? `v${chrome.runtime.getManifest().version}` : 'v.local.server'}
-            </Typography>
+            <Version />
         </Stack>
     )
 }
