@@ -106,7 +106,9 @@ export const HttpResponseCard = ({ exchange, deleteCallBack }: { exchange: HttpE
                 if (!RcUtils.isExtensionRuntime()) {
                     exchange.response.headers.push({ name: 'headers-suppressed', value: 'because not running as extension (see fetch & Access-Control-Expose-Headers)' })
                   }
-                Storage.updateRequestHistory(exchange.request)        
+                if (exchange.response.statusCode < 300) {
+                    Storage.updateRequestHistory(exchange.request)        
+                }
                 setExchangeState(exchange)
             }
             

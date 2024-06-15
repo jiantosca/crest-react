@@ -10,8 +10,9 @@ import { Stack, Typography, Alert, Button } from '@mui/material'
 import { HeaderHelper } from '../support/header-helper'
 import { handleCrestRequest } from '../support/crest-endpoints'
 
-export const requestSentEventType = 'requestSentEvent'
-export const requestCompleteEventType = 'requestCompleteEvent'
+export const requestSentEventType = 'requestSentEvent'//progress bar listens for this
+export const requestCompleteEventType = 'requestCompleteEvent'//progress bar listens for this
+export const triggerSendEventType = 'triggerSendEvent'//url autocomplete can fire this to trigger a send
 
 /**
  * I'm guessing this "outer" state (outside the component) var is kind of a hack but for now it works. Managing the state for what I 
@@ -261,6 +262,17 @@ export const RequestButton = (
 
   const [requestButtonState, setRequestButtonState] = React.useState<RequestButtonStateType>(sendRequestButtonState)
 
+  React.useEffect(() => {
+    const triggerSend = () => {
+      requestButtonState.onClick()
+    }
+    document.addEventListener(triggerSendEventType, triggerSend)
+    
+    // Cleanup
+    return () => {
+        document.removeEventListener(triggerSendEventType, triggerSend)
+    }
+  }, [requestButtonState])
 
   return (
     //how i figure out alignment via flex https://www.youtube.com/watch?v=sKeW8r_mDS0

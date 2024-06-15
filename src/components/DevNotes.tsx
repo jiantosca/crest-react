@@ -14,6 +14,11 @@ export const DevNotes = () => {
             <br/>
             {showDevNotes &&
                 <Box>
+                  <b>4.0.8</b>
+                    <ul>
+                        <li>hitting enter will submit request when url is focused</li>
+                        <li>fixed bug - request history should only be updated when response is 2xx, but rerun button wasn't checking status code before storing like RequestButton comp does.</li>
+                    </ul>                       
                   <b>4.0.7</b>
                     <ul>
                         <li>Sorting auto suggest better so crest oauth/saved show up first</li>

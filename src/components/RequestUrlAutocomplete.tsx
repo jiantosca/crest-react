@@ -6,6 +6,7 @@ import {
 import { FilterOptionsState } from '@mui/material'
 import { Storage } from "../support/storage"
 import { loadRequestEventType } from './RequestBuilder'
+import { triggerSendEventType } from './RequestButton'
 
 export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<string> }) => {
     const renderCounter = React.useRef(0)
@@ -83,7 +84,7 @@ export const UrlAutoComplete = ({ urlRef }: { urlRef: React.MutableRefObject<str
     
     const handleKeyDown = (event: React.KeyboardEvent) => {
       if (event.key === 'Enter') {
-        console.log('eventually supprt enter key press to submit request')
+        document.dispatchEvent(new Event(triggerSendEventType))
       }
     }
 
