@@ -2,6 +2,7 @@ import { OverridableStringUnion } from "@mui/types";
 import { HttpExchange, HttpRequest, HttpResponse, NameValuePair } from "./http-exchange";
 import { Application } from "./react-contexts";
 import { Typography, Alert } from '@mui/material'
+import { AppSettings } from "./settings";
 
 export class RcUtils {
 
@@ -49,9 +50,17 @@ export class RcUtils {
     if (httpExchange.aborted) {
       return
     } else if (httpExchange.timedout) {
+      const settingsTimeout = AppSettings.getServiceTimeout()
+      const timeoutDiff = settingsTimeout - ((httpExchange.timeout) ? httpExchange.timeout : 0)
+      const diffMessage = `At least ${timeoutDiff} milliseconds was spent dealing with headers (perhaps slow jwt call) and other preprocessing leaving ${httpExchange.timeout} milliseconds for the api call.`
+      console.error(`The request timed out after ${settingsTimeout} milliseconds. ${diffMessage}`)
       app.showDialog('Timed Out',
         <Alert severity='warning'>
-          <Typography component='div'>The request timed out after {httpExchange.timeout} milliseconds.</Typography>
+          <Typography component='div'>The request timed out after {settingsTimeout} milliseconds.</Typography>
+          { //let's only show extra messaging if the timeoutDiff is notable. The only time I can think of where it would be notable is when the jwt call is slowish
+            timeoutDiff > 100 && <><br/><Typography component='div'>{diffMessage}</Typography></>
+          }
+          
         </Alert>)
     } else {
       app.showDialog('Network Error',
@@ -84,4 +93,11 @@ export class RcUtils {
     }    
     return false
   }
+  //TODO - not using this yet, found here but needs more testing https://chatgpt.com/share/fc88e4aa-fa5c-4035-aeb1-0fa7c30587f0
+  static replacePlaceholdersWithValues(template: string, values: { [key: string]: string }): string {
+    return template.replace(/\$\{([^}]+)\}/g, (match, key) => {
+        console.log(`match: ${match}, key: ${key}`);
+        return key in values ? values[key] : '';
+    });
+}
 }

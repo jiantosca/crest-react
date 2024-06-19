@@ -3,6 +3,7 @@ import { HttpExchange, HttpExchangeHandler, HttpRequest, NameValuePair } from ".
 import { RcUtils } from "./rest-client-utils";
 import { Alert, Stack, Typography } from '@mui/material'
 import { Storage } from './storage';
+import { AppSettings } from './settings';
 export class HeaderHelper {
 
     private headers: NameValuePair[];
@@ -36,8 +37,6 @@ export class HeaderHelper {
         const problems: string[] = []
 
         this.headers.forEach((header) => {
-            
-
             if (header.name.startsWith('crest-oauth')) {
                 oauthRequest = Storage.getOAuth(header.value);
                 if(!oauthRequest) {
@@ -69,8 +68,8 @@ export class HeaderHelper {
      * for now this'll be fine.
      */
     private resolveOauthHeader(httpRequest: HttpRequest): Promise<NameValuePair> {
-        console.log("HeaderHelper.resolveOauthHeader TODO token caching and configurable timeout.")
-        const oauthTimout = 30000;
+        console.log("HeaderHelper.resolveOauthHeader TODO token caching.")
+        const timeout = AppSettings.getServiceTimeout()
         httpRequest.headers = httpRequest.unresolvedHeaders //no resoving headers for oauth
         return new Promise((resolve, reject) => {
             const tokenExchangeCompletionHandler = (exchange: HttpExchange) => {
@@ -98,7 +97,7 @@ export class HeaderHelper {
                 } else if(exchange.timedout) {
                     this.showDialog('OAuth Timed out',
                     <Alert severity="warning">
-                        <Typography>OAuth token retrieval timed out after {oauthTimout} milliseconds.</Typography>
+                        <Typography>OAuth token retrieval timed out after {timeout} milliseconds.</Typography>
                     </Alert>)
                     reject(`oauth request timed out`)
                 } else {
@@ -116,14 +115,14 @@ export class HeaderHelper {
             }
 
             //use this.requestId so we can stop it if needed when running as ext. 
-            const httpRequestWithId = { ...httpRequest, id: this.requestId }
+            const httpRequestWithId: HttpRequest = { ...httpRequest, id: this.requestId, timeout: timeout }
 
             if (RcUtils.isExtensionRuntime()) {
                 console.log('HeaderHelper.resolveOauthHeader running as extension')
                 chrome.runtime.sendMessage(httpRequestWithId, tokenExchangeCompletionHandler);
             } else {
                 console.log('HeaderHelper.resolveOauthHeader not running as extension')
-                this.httpExchangeHandler = new HttpExchangeHandler(httpRequestWithId, false, oauthTimout)
+                this.httpExchangeHandler = new HttpExchangeHandler(httpRequestWithId, false)
                 console.log('HeaderHelper.resolveOauthHeader TODO this next line is for stoping when not running as an ext');
                 //outerState.inFlightHttpExchangeHandler = httpExchangeHandler
                 this.httpExchangeHandler.submitRequest().then(tokenExchangeCompletionHandler)

@@ -14,6 +14,14 @@ export const DevNotes = () => {
             <br/>
             {showDevNotes &&
                 <Box>
+                  <b>4.0.9</b>
+                    <ul>
+                        <li>Timeout fixes. Timeout includes both times taken to deal with headers (possibly jwt calls) as well as api call. So if timeout is 10 seconds, and jwt takes 6
+                            seconds and api is greater than 4 then we'll get a timeout. And if header processing takes &gt; 100 millis, we'll put up extra messaging so user knows that
+                            a notable amount of time was spent processing headers (and some other misc processing). This should avoid confusion when user sets timeout to 10 seconds and
+                            they know api responded in, say, 9 seconds, but they still got a timeout. They'll know it was the header processing that caused it.
+                        </li>
+                    </ul>                      
                   <b>4.0.8</b>
                     <ul>
                         <li>hitting enter will submit request when url is focused</li>

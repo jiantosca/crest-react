@@ -9,6 +9,7 @@ import { HttpExchange, HttpRequest, NameValuePair } from '../support/http-exchan
 import { Stack, Typography, Alert, Button } from '@mui/material'
 import { HeaderHelper } from '../support/header-helper'
 import { handleCrestRequest } from '../support/crest-endpoints'
+import { AppSettings } from '../support/settings'
 
 export const requestSentEventType = 'requestSentEvent'//progress bar listens for this
 export const requestCompleteEventType = 'requestCompleteEvent'//progress bar listens for this
@@ -101,7 +102,8 @@ export const RequestButton = (
    * to submit the request which uses the afrormentioned call back functions.
    */
   const sendClickCallback = async (event?: React.MouseEvent<HTMLButtonElement>) => {
-
+    
+    const sendClickTime = Date.now();
     /**
      * Call back to abort the request when the user clicks the stop button. When a request 
      * is aborted the completion handler (below) will be called which has some logic to 
@@ -212,9 +214,13 @@ export const RequestButton = (
     
     const headerHelper = new HeaderHelper(headerNameValues, guid, appContext.showDialog)
     outerState.inFlightHeaderHelper = headerHelper
-    let resolvedHeaders;
+    let resolvedHeaders
+    let timeout = AppSettings.getServiceTimeout()
+
     try {
       resolvedHeaders = await headerHelper.resolveHeaders()
+      //below timeout is time leftover for api call's timeout..headers could take a while (possible jwt retrieval)
+      timeout -= (Date.now() - sendClickTime)
     } catch (error) {
       console.log('Header helper was either aborted, or if there was a real issue it should have already triggered ' +
         'a dialog for the user to review the issue. Error: ', error)
@@ -222,10 +228,12 @@ export const RequestButton = (
       return;
     }
 
+    // console.log('timeout leftover after header is', timeout)
+
     const httpRequest: HttpRequest = {
       id: guid,
-      //name: `${methodRef.current} ${urlRef.current} ${guid}`,
       name: '',
+      timeout: timeout,
       timestamp: new Date().getTime(),
       method: methodRef.current,
       url: urlRef.current,

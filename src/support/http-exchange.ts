@@ -8,6 +8,7 @@ export type HttpRequest = {
     name: string
     isOAuth?: boolean
     timestamp?: number
+    timeout?: number,
     method: string
     url: string
     headers: NameValuePair[]
@@ -44,12 +45,12 @@ export class HttpExchangeHandler {
     isExtensionRuntime: boolean
     chromeCookieNames: string[]
 
-    constructor(httpRequest: HttpRequest, isExtensionRuntime: boolean, timeout?: number) {
+    constructor(httpRequest: HttpRequest, isExtensionRuntime: boolean) {
         console.log('HttpExchangeHandler constructor')
         this.isExtensionRuntime = isExtensionRuntime
         this.httpRequest = httpRequest
         this.abortController = new AbortController()
-        this.timeout = (timeout) ? timeout : this.timeout
+        this.timeout = (httpRequest.timeout) ? httpRequest.timeout : this.timeout
         this.chromeCookieNames = []
     }
 
@@ -57,8 +58,6 @@ export class HttpExchangeHandler {
      * @deprecated see submitRequest
      */
     private _submitRequest(completionHandler: (exchange: HttpExchange) => void): void {
-        console.log('HttpExchangeHandler.sendRequest NO COOKIE handling yet.')
-
         const timeoutId = (this.timeout > 0) ? setTimeout(() => {
             this.timedout = true
             this.abortController.abort()
